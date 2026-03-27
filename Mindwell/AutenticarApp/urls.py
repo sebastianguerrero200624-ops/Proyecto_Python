@@ -6,6 +6,7 @@ urlpatterns = [
     path('',views.Registrar.as_view(),name='registrar'),
     # Login
     path('login',views.validar,name='login'),
+    path('terminos_condiciones',views.termicon,name='terminos_condiciones'),
 
     # Confirmación de correo
     path('pendiente_confirmacion', views.pendiente_confirmacion, name='pendiente_confirmacion'),
@@ -17,4 +18,5 @@ urlpatterns = [
     # Recuperación de contraseña
     path('recup',views.recup,name='recup'),
     path('cambiarpass',views.cambiarpass,name='cambiarpass'),
+
 ]

@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.contrib.auth.hashers import make_password
-from MiProyecto import settings
+from Mindwell import settings
 
 from .models import Perfil, TokenConfirmacion, Recup
 
@@ -30,6 +30,9 @@ DOMINIOS_PERMITIDOS = set(DOMINIOS_ROL.keys())
 def _generar_token(k=64):
     caracteres = string.ascii_uppercase + string.ascii_lowercase + string.digits
     return ''.join(random.choices(caracteres, k=k))
+    
+def termicon(request):
+    return render(request, 'terminos_condiciones.html')
 
 
 def _rol_desde_correo(correo: str):

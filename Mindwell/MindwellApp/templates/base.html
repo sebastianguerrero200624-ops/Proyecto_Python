@@ -11,6 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="{% static 'css/login.css' %}">
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+  
+  
 
   {% block estilos_extra %}{% endblock %}
 </head>
@@ -50,7 +52,11 @@
         </div>
       {% endif %}
 
+      
+
       <div class="form-container">
+        {% block content %}{% endblock %}
+
         {% block formularios %}{% endblock %}
       </div>
     </div>

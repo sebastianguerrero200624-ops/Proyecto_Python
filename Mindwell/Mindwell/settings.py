@@ -57,7 +57,7 @@ ROOT_URLCONF = 'Mindwell.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ["MiProyectoApp/templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -118,3 +118,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+MEDIA_URL = 'Mindwell/media/'
+
+MEDIA_ROOT = 'Mindwell/media/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'Mindwell_Oficial.gmail.com' # Ejemplo con Gmail
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'tdjango04@gmail.com'
+EMAIL_HOST_PASSWORD = 'zbrc swxj vrfi wbbr'
