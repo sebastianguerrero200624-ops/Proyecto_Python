@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}MindWell — Acceso{% endblock %}
+
+{% block formularios %}
+
+  {# ──────────── FORMULARIO DE LOGIN ──────────── #}
+  <form class="form {% if not mostrar_registro %}active{% endif %}" id="loginForm"
+        method="POST" action="{% url 'login' %}">
+    {% csrf_token %}
+
+    <div class="input-row">
+
+      <div class="input-group full-width">
+        <div class="input-container">
+          <input type="text" class="form-input" id="loginDocumento"
+                 name="username" placeholder=" " required>
+          <label class="floating-label">Documento</label>
+        </div>
+        <div class="error-message" id="loginDocumentoError">
+          <span>⚠️</span><span class="error-text"></span>
+        </div>
+      </div>
+
+      <div class="input-group full-width">
+        <div class="input-container">
+          <input type="password" class="form-input" id="loginContrasena"
+                 name="password" placeholder=" " required>
+          <label class="floating-label">Contraseña</label>
+          <button type="button" class="password-toggle" data-target="loginContrasena">👁️</button>
+        </div>
+        <div class="error-message" id="loginContrasenaError">
+          <span>⚠️</span><span class="error-text"></span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="checkbox-container">
+      <label class="custom-checkbox">
+        <input type="checkbox" id="rememberMe">
+        <span class="checkmark"></span>
+      </label>
+      <label for="rememberMe" style="font-size:14px;color:#666;">Recordarme</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+      <span class="btn-text">Iniciar Sesión</span>
+      <span class="loading-spinner"></span>
+    </button>
+
+    <div class="form-links" style="margin-top:10px;text-align:center;font-size:13px;">
+      <a href="{% url 'recup' %}" style="color:#888;">¿Olvidaste tu contraseña?</a>
+    </div>
+
+    <div class="form-switch">
+      <p>¿No tienes una cuenta? <a href="#" id="showRegister">Regístrate aquí</a></p>
+    </div>
+  </form>
+
+  {# ──────────── FORMULARIO DE REGISTRO ──────────── #}
+  <form class="form {% if mostrar_registro %}active{% endif %}" id="registerForm"
+        method="POST" action="{% url 'registrar' %}">
+    {% csrf_token %}
+
+    <div class="input-row">
+
+      {# NOMBRES #}
+      <div class="input-group">
+        <div class="input-container">
+          <input type="text" class="form-input {% if errores.nombres %}input-error{% endif %}"
+                 id="registerNombres" name="nombres"
+                 value="{{ datos.nombres|default:'' }}" placeholder=" " required>
+          <label class="floating-label">Nombres</label>
+        </div>
+        {% if errores.nombres %}
+          <div class="error-message show">
+            <span>⚠️</span><span class="error-text">{{ errores.nombres }}</span>
+          </div>
+        {% else %}
+          <div class="error-message" id="registerNombresError">
+            <span>⚠️</span><span class="error-text"></span>
+          </div>
+        {% endif %}
+      </div>
+
+      {# APELLIDOS #}
+      <div class="input-group">
+        <div class="input-container">
+          <input type="text" class="form-input {% if errores.apellidos %}input-error{% endif %}"
+                 id="registerApellidos" name="apellidos"
+                 value="{{ datos.apellidos|default:'' }}" placeholder=" " required>
+          <label class="floating-label">Apellidos</label>
+        </div>
+        {% if errores.apellidos %}
+          <div class="error-message show">
+            <span>⚠️</span><span class="error-text">{{ errores.apellidos }}</span>
+          </div>
+        {% else %}
+          <div class="error-message" id="registerApellidosError">
+            <span>⚠️</span><span class="error-text"></span>
+          </div>
+        {% endif %}
+      </div>
+
+      {# DOCUMENTO — mínimo 5, máximo 10 dígitos #}
+      <div class="input-group">
+        <div class="input-container">
+          <input type="text" class="form-input {% if errores.documento %}input-error{% endif %}"
+                 id="registerDocumento" name="documento"
+                 value="{{ datos.documento|default:'' }}"
+                 placeholder=" " minlength="5" maxlength="10"
+                 pattern="\d{5,10}" inputmode="numeric" required>
+          <label class="floating-label">Documento</label>
+        </div>
+        {% if errores.documento %}
+          <div class="error-message show">
+            <span>⚠️</span><span class="error-text">{{ errores.documento }}</span>
+          </div>
+        {% else %}
+          <div class="error-message" id="registerDocumentoError">
+            <span>⚠️</span><span class="error-text"></span>
+          </div>
+        {% endif %}
+      </div>
+
+      {# CORREO ELECTRÓNICO #}
+      <div class="input-group">
+        <div class="input-container">
+          <input type="email" class="form-input {% if errores.correo %}input-error{% endif %}"
+                 id="registerEmail" name="correo"
+                 value="{{ datos.correo|default:'' }}" placeholder=" " required>
+          <label class="floating-label">Correo Electrónico</label>
+        </div>
+        {% if errores.correo %}
+          <div class="error-message show">
+            <span>⚠️</span><span class="error-text">{{ errores.correo }}</span>
+          </div>
+        {% else %}
+          <div class="error-message" id="registerEmailError">
+            <span>⚠️</span><span class="error-text"></span>
+          </div>
+        {% endif %}
+      </div>
+
+      {# CONTRASEÑA #}
+      <div class="input-group full-width">
+        <div class="input-container">
+          <input type="password" class="form-input {% if errores.password %}input-error{% endif %}"
+                 id="registerContrasena" name="password" placeholder=" " required>
+          <label class="floating-label">Contraseña</label>
+          <button type="button" class="password-toggle" data-target="registerContrasena">👁️</button>
+        </div>
+        <div class="password-strength">
+          <div class="strength-bar">
+            <div class="strength-fill" id="strengthFill"></div>
+          </div>
+          <div class="strength-text" id="strengthText">Ingresa una contraseña</div>
+        </div>
+        {% if errores.password %}
+          <div class="error-message show">
+            <span>⚠️</span><span class="error-text">{{ errores.password }}</span>
+          </div>
+        {% else %}
+          <div class="error-message" id="registerContrasenaError">
+            <span>⚠️</span><span class="error-text"></span>
+          </div>
+        {% endif %}
+      </div>
+
+      {# CONFIRMAR CONTRASEÑA #}
+      <div class="input-group full-width">
+        <div class="input-container">
+          <input type="password" class="form-input {% if errores.password2 %}input-error{% endif %}"
+                 id="confirmContrasena" name="password2" placeholder=" " required>
+          <label class="floating-label">Confirmar Contraseña</label>
+          <button type="button" class="password-toggle" data-target="confirmContrasena">👁️</button>
+        </div>
+        {% if errores.password2 %}
+          <div class="error-message show">
+            <span>⚠️</span><span class="error-text">{{ errores.password2 }}</span>
+          </div>
+        {% else %}
+          <div class="error-message" id="confirmContrasenaError">
+            <span>⚠️</span><span class="error-text"></span>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    {# TÉRMINOS #}
+    <div class="checkbox-container">
+      <label class="custom-checkbox">
+        <input type="checkbox" id="acceptTerms" name="terminos" required>
+        <span class="checkmark"></span>
+      </label>
+      <label for="acceptTerms" style="font-size:14px;color:#666;">
+        Acepto los <a href="#">términos y condiciones</a>
+      </label>
+      {% if errores.terminos %}
+        <span style="color:red;font-size:12px;display:block;">{{ errores.terminos }}</span>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+      <span class="btn-text">Crear Cuenta</span>
+      <span class="loading-spinner"></span>
+    </button>
+
+    <div class="form-switch">
+      <p>¿Ya tienes una cuenta? <a href="#" id="showLogin">Inicia sesión aquí</a></p>
+    </div>
+  </form>
+
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+  // Si hay errores de registro, asegurarse de que el panel de registro esté visible
+  {% if mostrar_registro %}
+  document.addEventListener('DOMContentLoaded', function () {
+    const loginForm    = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    if (loginForm)    loginForm.classList.remove('active');
+    if (registerForm) registerForm.classList.add('active');
+  });
+  {% endif %}
+</script>
+{% endblock %}

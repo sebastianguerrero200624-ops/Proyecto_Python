@@ -1,0 +1,247 @@
+/* === ESTILO CORPORATIVO SENA === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f8f9fa;
+  color: #222;
+  line-height: 1.6;
+}
+
+/* ======== ENCABEZADO ======== */
+.header {
+  background-color: #009879; /* Verde institucional SENA */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 40px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.logo-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 75px;
+  border-radius: 100%;
+}
+
+.logo-text {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+/* Botón corporativo */
+.btn-sesion {
+  padding: 10px 20px;
+  background-color: #006c58;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 5px;
+  transition: background 0.3s;
+}
+
+.btn-sesion:hover {
+  background-color: #00b48a;
+}
+
+/* ======== CARRUSEL ======== */
+.carrusel {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 480px;
+}
+
+.slider {
+  display: flex;
+  height: 100%;
+  transition: transform 0.6s ease-in-out;
+}
+
+.slide {
+  position: relative;
+  min-width: 100%;
+  height: 100%;
+}
+
+.slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+
+.overlay h2 {
+  font-size: 2.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.overlay p {
+  font-size: 1.2rem;
+  margin-top: 10px;
+}
+
+/* Botones del carrusel */
+.btn-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 22px;
+  z-index: 10;
+  transition: background 0.3s;
+}
+
+.btn-nav:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.left { left: 15px; }
+.right { right: 15px; }
+
+/* ======== SECCIÓN DE INFORMACIÓN ======== */
+.info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.info-box {
+  width: 460px;
+  perspective: 1000px;
+}
+
+.flip-card {
+  width: 100%;
+  height: 340px;
+  position: relative;
+}
+
+.flip-inner {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.flip-card:hover .flip-inner {
+  transform: rotateY(180deg);
+}
+
+.front, .back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.front h3 {
+  color: #009879;
+}
+
+.back {
+  transform: rotateY(180deg);
+  background-color: #006c58;
+  color: #fff;
+}
+
+.info-img {
+  width: 100%;
+  border-radius: 10px;
+  margin-top: 15px;
+}
+
+/* ======== NUEVA SECCIÓN INTERACTIVA ======== */
+.interactive-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 60px 40px;
+  gap: 40px;
+  flex-wrap: wrap;
+  background-color: #e9f5f1;
+}
+
+.interactive-text {
+  flex: 1;
+  color: #333;
+  max-width: 500px;
+}
+
+.interactive-text h2 {
+  font-size: 2.3rem;
+  color: #009879;
+  margin-bottom: 20px;
+}
+
+.interactive-image-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  perspective: 1000px;
+}
+
+#interactive-img {
+  width: 300px;
+  height: auto;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+#interactive-img:hover {
+  transform: rotateY(10deg) scale(1.05);
+}
+
+/* ======== PIE DE PÁGINA ======== */
+footer {
+  background-color: #004f3b;
+  color: #fff;
+  text-align: center;
+  padding: 25px 10px;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}

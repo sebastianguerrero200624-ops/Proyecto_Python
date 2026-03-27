@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}MindWell — Confirma tu correo{% endblock %}
+{% block auth_titulo %}¡Casi listo!{% endblock %}
+{% block auth_subtitulo %}Verifica tu correo para activar tu cuenta{% endblock %}
+
+{% block formularios %}
+<div style="text-align:center; padding: 30px 20px;">
+
+  <div style="font-size: 60px; margin-bottom: 20px;">📬</div>
+
+  <h3 style="font-family:'Merriweather',serif; margin-bottom: 12px; color: #2d2d2d;">
+    Revisa tu bandeja de entrada
+  </h3>
+
+  <p style="color: #666; font-size: 14px; line-height: 1.7; margin-bottom: 24px;">
+    Te hemos enviado un correo con un enlace de confirmación.<br>
+    Haz clic en él para activar tu cuenta y poder iniciar sesión.
+  </p>
+
+  <p style="color: #999; font-size: 12px; margin-bottom: 28px;">
+    Si no lo encuentras, revisa la carpeta de <strong>spam</strong> o correo no deseado.
+  </p>
+
+  <a href="{% url 'login' %}" class="btn btn-primary"
+     style="display:inline-block; text-decoration:none; padding: 12px 30px;">
+    Ir al inicio de sesión
+  </a>
+
+</div>
+{% endblock %}

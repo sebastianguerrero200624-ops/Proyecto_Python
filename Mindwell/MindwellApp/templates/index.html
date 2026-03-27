@@ -1,0 +1,105 @@
+<!-- HTML -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindWell</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+ <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+  <header class="header">
+    <div class="logo-box">
+      <img src="img/logo.png" alt="Logo MindWell" class="logo-img" />
+      <h1 class="logo-text">MINDWELL</h1>
+    </div>
+    <nav>
+      <a href="/login" class="btn-sesion">Iniciar Sesión</a>
+    </nav>
+  </header>
+
+  <!-- Carrusel -->
+  <section class="carrusel" aria-label="Galería de imágenes">
+    <button class="btn-nav left" id="back" aria-label="Anterior">&#10094;</button>
+    <div class="slider" id="slider-container">
+      <div class="slide">
+        <img src="img/fondo1.png" alt="Ciudad pixel art">
+        <div class="overlay">
+          <h2>MINDWELL</h2>
+          <p>Proyecto de vida y bienestar</p>
+        </div>
+      </div>
+      <div class="slide">
+        <img src="img/fondo.png" alt="Fondo colorido">
+        <div class="overlay">
+          <h2>MINDWELL</h2>
+          <p>Descubre tu propósito</p>
+        </div>
+      </div>
+      <div class="slide">
+        <img src="img/fondo 2.jpg" alt="Paisaje imaginario">
+        <div class="overlay">
+          <h2>MINDWELL</h2>
+          <p>Una comunidad para crecer</p>
+        </div>
+      </div>
+    </div>
+    <button class="btn-nav right" id="next" aria-label="Siguiente">&#10095;</button>
+  </section>
+
+  <!-- Contenedores de información -->
+  <section class="info">
+    <article class="info-box">
+      <div class="flip-card">
+        <div class="flip-inner">
+          <div class="front">
+            <h2>Bienestar</h2>
+            <p>Consejos para mejorar tu día a día.</p>
+            <img src="img/fondo.png" class="info-img" alt="Ilustración de bienestar" />
+          </div>
+          <div class="back">
+            <h2>Bienestar</h2>
+            <p>Alimentación, descanso y salud mental. Lo esencial para una vida en equilibrio.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="info-box">
+      <div class="flip-card">
+        <div class="flip-inner">
+          <div class="front">
+            <h2>Comunidad</h2>
+            <p>Conéctate con personas que comparten tu camino.</p>
+          </div>
+          <div class="back">
+            <h2>Comunidad</h2>
+            <p>Historias reales, apoyo mutuo, y redes de solidaridad en crecimiento.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+   <!-- Nueva sección interactiva -->
+<section class="interactive-section">
+  <div class="interactive-text">
+    <h2>Explora tu mundo</h2>
+    <p>Una herramienta visual para mirar desde nuevas perspectivas.</p>
+  </div>
+  <div class="interactive-image-container">
+    <img id="interactive-img" src="img/avantar.webp" alt="Avatar interactivo">
+  </div>
+</section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; Team scrum 9 Sena.</p>
+  </footer>
+
+  <script src="js/carrusel.js"></script>
+</body>
+</html>

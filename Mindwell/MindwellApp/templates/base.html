@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  {% load static %}
+  <title>{% block titulo %}MindWell{% endblock %}</title>
+
+  <!-- Fuentes y estilos -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+
+  {% block estilos_extra %}{% endblock %}
+</head>
+
+<body>
+  <!-- Contenedor de estrellas -->
+  <div class="stars-container" id="starsContainer"></div>
+
+  <!-- Contenedor principal -->
+  <div class="auth-container">
+
+    <!-- Panel de branding -->
+    <div class="branding-panel">
+      <div class="logo-section">
+        <h1 class="logo-text">MINDWELL</h1>
+        <p class="branding-subtitle">
+          Tu plataforma de bienestar mental<br>
+          Encuentra el equilibrio perfecto<br>
+          para tu mente y cuerpo
+        </p>
+      </div>
+    </div>
+
+    <!-- Panel de formularios -->
+    <div class="forms-panel">
+      <div class="auth-header">
+        <h2 class="auth-title">{% block auth_titulo %}Bienvenido{% endblock %}</h2>
+        <p class="auth-subtitle">{% block auth_subtitulo %}Inicia tu viaje hacia el bienestar{% endblock %}</p>
+      </div>
+
+      <!-- Mensajes de Django -->
+      {% if messages %}
+        <div class="django-messages">
+          {% for message in messages %}
+            <div class="django-msg django-msg--{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="form-container">
+        {% block formularios %}{% endblock %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Overlay de carga -->
+  <div id="loginOverlay" class="overlay hidden">
+    <div class="overlay-content">
+      <p>Estamos ingresando, espere un momento...</p>
+    </div>
+  </div>
+
+  <!-- ALERTAS PERSONALIZADAS -->
+  <div id="customAlertOverlay" class="custom-alert-overlay">
+    <div id="customAlert" class="custom-alert">
+      <div class="alert-icon">
+        <span id="alertIcon">✓</span>
+      </div>
+      <div class="alert-content">
+        <h3 id="alertTitle">¡Éxito!</h3>
+        <p id="alertMessage">Mensaje aquí</p>
+      </div>
+      <button id="alertCloseBtn" class="alert-close-btn">×</button>
+    </div>
+  </div>
+
+  <script src="{% static 'js/login.js' %}"></script>
+  {% block scripts_extra %}{% endblock %}
+</body>
+</html>
