@@ -1,7 +1,6 @@
 import string, random
 from django.shortcuts import render, redirect
 from django.views.generic import View
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -21,40 +20,29 @@ DOMINIOS_ROL = {
     'administradormindwell2006.com': 1,   # Administrador
     'gmail.com':                     2,   # Aprendiz
     'soy.sena.edu.co':               2,   # Aprendiz
-    'sena.edu.co':                   3,   # Psicosocial
+    'sena.edu.co':                   3,   # Instructor / Psicosocial
 }
-
-DOMINIOS_PERMITIDOS = set(DOMINIOS_ROL.keys())
 
 
 def _generar_token(k=64):
     caracteres = string.ascii_uppercase + string.ascii_lowercase + string.digits
     return ''.join(random.choices(caracteres, k=k))
-    
-def termicon(request):
-    return render(request, 'terminos_condiciones.html')
 
 
 def _rol_desde_correo(correo: str):
-    """Devuelve el rol_id según el dominio del correo, o None si no está permitido."""
     dominio = correo.strip().lower().split('@')[-1]
     return DOMINIOS_ROL.get(dominio)
 
 
-def _enviar_token_confirmacion(user, request=None):
-    """Crea un TokenConfirmacion y envía el correo de verificación."""
-    # Eliminar tokens anteriores para este correo (reenvío)
+def _enviar_token_confirmacion(user):
     TokenConfirmacion.objects.filter(correo=user.email).delete()
-
     token = _generar_token()
     TokenConfirmacion.objects.create(correo=user.email, token=token)
 
     url = f'http://localhost:8000/autenticar/confirmar_correo?c={user.email}&t={token}'
-    contexto = {
-        'url': url,
-        'nombre': user.first_name or user.username,
-    }
+    contexto = {'url': url, 'nombre': user.first_name or user.username}
     html = render_to_string('correo_confirmacion.html', contexto)
+
     email = EmailMessage(
         subject='Confirma tu cuenta en MindWell',
         body=html,
@@ -66,48 +54,48 @@ def _enviar_token_confirmacion(user, request=None):
 
 
 # ──────────────────────────────────────────────
-#  REGISTRO  (GET = mostrar página, POST = crear cuenta)
+#  TÉRMINOS Y CONDICIONES
+# ──────────────────────────────────────────────
+
+def termicon(request):
+    return render(request, 'terminos_condiciones.html')
+
+
+# ──────────────────────────────────────────────
+#  REGISTRO
 # ──────────────────────────────────────────────
 
 class Registrar(View):
-    """
-    Maneja el formulario de registro que vive dentro de login.html.
-    La vista de login también vive en esa misma página (ver `validar`).
-    """
 
     def get(self, request):
         return render(request, 'login.html')
 
     def post(self, request):
-        # ── Recoger datos ──
-        nombres    = request.POST.get('nombres', '').strip()
-        apellidos  = request.POST.get('apellidos', '').strip()
-        documento  = request.POST.get('documento', '').strip()
-        correo     = request.POST.get('correo', '').strip().lower()
-        password   = request.POST.get('password', '')
-        password2  = request.POST.get('password2', '')
-        terminos   = request.POST.get('terminos')
+        nombres   = request.POST.get('nombres', '').strip()
+        apellidos = request.POST.get('apellidos', '').strip()
+        documento = request.POST.get('documento', '').strip()
+        correo    = request.POST.get('correo', '').strip().lower()
+        password  = request.POST.get('password', '')
+        password2 = request.POST.get('password2', '')
+        terminos  = request.POST.get('terminos')
 
         errores = {}
 
-        # ── Validaciones ──
         if not nombres:
             errores['nombres'] = 'El campo Nombres es obligatorio.'
-
         if not apellidos:
             errores['apellidos'] = 'El campo Apellidos es obligatorio.'
-
         if not documento.isdigit() or not (5 <= len(documento) <= 10):
             errores['documento'] = 'El documento debe tener entre 5 y 10 dígitos numéricos.'
+        elif Perfil.objects.filter(documento=documento).exists():
+            errores['documento'] = 'Ya existe una cuenta con ese número de documento.'
 
         if not correo:
             errores['correo'] = 'El correo electrónico es obligatorio.'
         else:
             rol = _rol_desde_correo(correo)
             if rol is None:
-                errores['correo'] = (
-                    'El dominio del correo no está permitido. '
-                )
+                errores['correo'] = 'El dominio del correo no está permitido.'
             elif User.objects.filter(email=correo).exists():
                 errores['correo'] = 'Ya existe una cuenta con ese correo electrónico.'
 
@@ -122,14 +110,13 @@ class Registrar(View):
         if errores:
             return render(request, 'login.html', {
                 'errores': errores,
-                'mostrar_registro': True,   # para que el JS abra el panel de registro
+                'mostrar_registro': True,
                 'datos': request.POST,
             })
 
         # ── Crear usuario ──
         rol = _rol_desde_correo(correo)
         username = correo.split('@')[0]
-        # Garantizar username único
         base_username = username
         contador = 1
         while User.objects.filter(username=username).exists():
@@ -150,17 +137,15 @@ class Registrar(View):
             apellidos=apellidos,
             documento=documento,
             rol_id=rol,
-            activo=False,   # pendiente de verificación
+            activo=False,
         )
 
-        # ── Enviar correo de confirmación ──
         _enviar_token_confirmacion(usuario)
-
         return redirect('pendiente_confirmacion')
 
 
 # ──────────────────────────────────────────────
-#  PENDIENTE DE CONFIRMACIÓN  (página intermedia)
+#  PENDIENTE DE CONFIRMACIÓN
 # ──────────────────────────────────────────────
 
 def pendiente_confirmacion(request):
@@ -168,7 +153,7 @@ def pendiente_confirmacion(request):
 
 
 # ──────────────────────────────────────────────
-#  CONFIRMAR CORREO  (clic en el enlace del email)
+#  CONFIRMAR CORREO
 # ──────────────────────────────────────────────
 
 def confirmar_correo(request):
@@ -180,11 +165,8 @@ def confirmar_correo(request):
         usuario  = User.objects.get(email=correo)
         perfil   = usuario.perfil
 
-        # Activar cuenta
         perfil.activo = True
         perfil.save(update_fields=['activo'])
-
-        # Eliminar token usado
         registro.delete()
 
         messages.success(request, '¡Tu cuenta ha sido confirmada! Ya puedes iniciar sesión.')
@@ -197,39 +179,35 @@ def confirmar_correo(request):
 
 
 # ──────────────────────────────────────────────
-#  LOGIN
+#  LOGIN — autenticación por DOCUMENTO
 # ──────────────────────────────────────────────
 
 def validar(request):
     if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            nombre = form.cleaned_data.get('username')
-            contra = form.cleaned_data.get('password')
-            usuario = authenticate(username=nombre, password=contra)
-            if usuario:
-                # Verificar que la cuenta esté activa (correo confirmado)
-                try:
-                    if not usuario.perfil.activo:
-                        messages.error(
-                            request,
-                            'Tu cuenta no está confirmada. '
-                            'Revisa tu correo y haz clic en el enlace de verificación.'
-                        )
-                        return render(request, 'login.html', {'form': form})
-                except Perfil.DoesNotExist:
-                    pass  # Usuarios sin perfil (superusuarios) pasan directo
+        documento = request.POST.get('documento', '').strip()
+        password  = request.POST.get('password', '')
 
-                login(request, usuario)
-                return redirect('/')
-            else:
-                messages.error(request, 'Documento y/o Contraseña no válidos.')
+        # DocumentoBackend busca en Perfil.documento
+        usuario = authenticate(request, username=documento, password=password)
+
+        if usuario is not None:
+            try:
+                if not usuario.perfil.activo:
+                    messages.error(
+                        request,
+                        'Tu cuenta aún no ha sido confirmada. '
+                        'Revisa tu correo y haz clic en el enlace de verificación.'
+                    )
+                    return render(request, 'login.html')
+            except Perfil.DoesNotExist:
+                pass  # superusuarios sin perfil pasan directo
+
+            login(request, usuario)
+            return redirect('dashboard')
         else:
-            messages.error(request, 'La información ingresada no es correcta.')
-    else:
-        form = AuthenticationForm()
+            messages.error(request, 'Documento y/o contraseña incorrectos.')
 
-    return render(request, 'login.html', {'form': form})
+    return render(request, 'login.html')
 
 
 # ──────────────────────────────────────────────
@@ -238,7 +216,7 @@ def validar(request):
 
 def cerrar_sesion(request):
     logout(request)
-    return redirect('/')
+    return redirect('login')
 
 
 # ──────────────────────────────────────────────
@@ -266,15 +244,14 @@ def recup(request):
             email.content_subtype = 'html'
             email.send()
 
-            msj = 'La solicitud se ha procesado exitosamente. Revisa tu correo.'
-            ok = 1
+            msj = 'Solicitud procesada. Revisa tu correo.'
+            ok  = 1
         except User.DoesNotExist:
             msj = 'El correo especificado no existe.'
-            ok = 0
+            ok  = 0
 
         return render(request, 'recup.html', {'msj': msj, 'ok': ok})
-    else:
-        return render(request, 'recup.html')
+    return render(request, 'recup.html')
 
 
 # ──────────────────────────────────────────────

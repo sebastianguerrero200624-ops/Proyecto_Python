@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}MindWell — Recuperar Contraseña{% endblock %}
+{% block auth_titulo %}¿Olvidaste tu contraseña?{% endblock %}
+{% block auth_subtitulo %}Ingresa tu correo y te enviaremos un enlace{% endblock %}
+
+{% block formularios %}
+
+  <form class="form active" method="POST" action="{% url 'recup' %}">
+    {% csrf_token %}
+
+    <div class="input-row">
+      <div class="input-group full-width">
+        <div class="input-container">
+          <input type="email" class="form-input" name="correo" id="correoRecup"
+                 placeholder=" " required>
+          <label class="floating-label">Correo Electrónico</label>
+        </div>
+      </div>
+    </div>
+
+    {% if msj %}
+      {% if ok == 1 %}
+        <div class="django-msg django-msg--success" style="margin: 12px 0;">
+          ✅ {{ msj }} — Revisa tu bandeja de entrada.
+        </div>
+      {% else %}
+        <div class="django-msg django-msg--error" style="margin: 12px 0;">
+          ❌ {{ msj }}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary">
+      <span class="btn-text">Enviar enlace de recuperación</span>
+      <span class="loading-spinner"></span>
+    </button>
+
+    <div class="form-switch" style="margin-top: 16px;">
+      <p><a href="{% url 'login' %}">← Volver al inicio de sesión</a></p>
+    </div>
+
+  </form>
+
+{% endblock %}

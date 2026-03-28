@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recupera tu contraseña — MindWell</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #333;
+    }
+
+    .wrapper {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      padding: 40px 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      color: #ffffff;
+      font-size: 32px;
+      letter-spacing: 4px;
+      font-weight: 700;
+    }
+
+    .header p {
+      color: rgba(255,255,255,0.65);
+      font-size: 13px;
+      margin-top: 6px;
+      letter-spacing: 1px;
+    }
+
+    .content {
+      padding: 40px 36px;
+    }
+
+    .greeting {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 16px;
+    }
+
+    .body-text {
+      font-size: 15px;
+      color: #555;
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    .btn-wrapper {
+      text-align: center;
+      margin: 32px 0;
+    }
+
+    /* Color diferente al de confirmación — naranja/rojo para distinguirlo */
+    .btn-restablecer {
+      display: inline-block;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 16px 44px;
+      border-radius: 50px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      box-shadow: 0 6px 20px rgba(245,87,108,0.4);
+    }
+
+    .fallback {
+      background: #fff5f5;
+      border-left: 4px solid #f5576c;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 20px 0;
+      font-size: 12px;
+      color: #888;
+      word-break: break-all;
+    }
+
+    .fallback strong {
+      display: block;
+      color: #555;
+      margin-bottom: 6px;
+    }
+
+    .security-note {
+      background: #fff8e1;
+      border: 1px solid #ffe082;
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-size: 13px;
+      color: #795548;
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+
+    .security-note::before {
+      content: '🔒 ';
+    }
+
+    .footer {
+      background: #f8f9fa;
+      border-top: 1px solid #eee;
+      text-align: center;
+      padding: 24px 30px;
+      font-size: 12px;
+      color: #aaa;
+      line-height: 1.8;
+    }
+
+    .footer strong {
+      color: #888;
+    }
+
+    .stars {
+      font-size: 18px;
+      letter-spacing: 6px;
+      margin-bottom: 6px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="stars">✦ ✦ ✦</div>
+      <h1>MINDWELL</h1>
+      <p>Tu plataforma de bienestar mental</p>
+    </div>
+
+    <!-- Contenido -->
+    <div class="content">
+
+      <p class="greeting">¡Hola, {{ nom }}! 👋</p>
+
+      <p class="body-text">
+        Recibimos una solicitud para restablecer la contraseña de tu cuenta en
+        <strong>MindWell</strong>. Si fuiste tú quien la solicitó, haz clic en
+        el botón de abajo para continuar.
+      </p>
+
+      <p class="body-text">
+        Este enlace es válido para un solo uso. Una vez que lo utilices,
+        podrás crear una nueva contraseña e iniciar sesión normalmente.
+      </p>
+
+      <!-- Botón CTA -->
+      <div class="btn-wrapper">
+        <a href="{{ url_cc }}" class="btn-restablecer">
+          🔑 &nbsp;Restablecer mi contraseña
+        </a>
+      </div>
+
+      <!-- URL de respaldo -->
+      <div class="fallback">
+        <strong>¿El botón no funciona? Copia y pega este enlace en tu navegador:</strong>
+        {{ url_cc }}
+      </div>
+
+      <!-- Aviso de seguridad -->
+      <div class="security-note">
+        Si <strong>no solicitaste</strong> este cambio, ignora este correo.
+        Tu contraseña actual seguirá siendo la misma y nadie podrá acceder
+        a tu cuenta sin ella.
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p><strong>MindWell</strong> — Plataforma de Bienestar Mental</p>
+      <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+      <p style="margin-top:8px;">© 2024 MindWell. Todos los derechos reservados.</p>
+    </div>
+
+  </div>
+</body>
+</html>

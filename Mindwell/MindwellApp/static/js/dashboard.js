@@ -1,225 +1,110 @@
 // ============================================================================
-// DASHBOARD MINDWELL - SISTEMA COMPLETO
+// DASHBOARD MINDWELL
 // ============================================================================
 
-// Poemas inspiradores (20 poemas)
 const POEMAS_DIARIOS = [
-    {
-        texto: "Respira hondo, el día es nuevo.\nCada instante es una oportunidad.",
-        autor: "Mindfulness"
-    },
-    {
-        texto: "La calma no está en la ausencia de tormentas,\nsino en la paz interior que cultivas.",
-        autor: "Anónimo"
-    },
-    {
-        texto: "Tus pensamientos son semillas.\nRiega las que quieres ver crecer.",
-        autor: "Sabiduría popular"
-    },
-    {
-        texto: "No es el estrés lo que nos mata,\nsino nuestra reacción ante él.",
-        autor: "Hans Selye"
-    },
-    {
-        texto: "Hoy elijo la paz.\nHoy elijo el bienestar.",
-        autor: "Afirmación diaria"
-    },
-    {
-        texto: "El autocuidado no es egoísmo,\nes autopreservación.",
-        autor: "Audre Lorde"
-    },
-    {
-        texto: "Pequeños pasos cada día\nconstruyen grandes cambios.",
-        autor: "Motivación"
-    },
-    {
-        texto: "Tu salud mental merece\nla misma atención que tu salud física.",
-        autor: "Conciencia"
-    },
-    {
-        texto: "No estás solo en este camino.\nPedir ayuda es valentía.",
-        autor: "Apoyo"
-    },
-    {
-        texto: "La ansiedad es temporal.\nTú eres eterno.",
-        autor: "Fortaleza"
-    },
-    {
-        texto: "Cada día sin compararte\nes un día ganado.",
-        autor: "Autoaceptación"
-    },
-    {
-        texto: "Tus emociones son válidas.\nNo necesitas justificarlas.",
-        autor: "Empatía"
-    },
-    {
-        texto: "El descanso no es debilidad,\nes necesidad.",
-        autor: "Autocuidado"
-    },
-    {
-        texto: "Hoy es perfecto para empezar\na cuidar de ti.",
-        autor: "Hoy"
-    },
-    {
-        texto: "No puedes controlar el viento,\npero sí ajustar tus velas.",
-        autor: "Resiliencia"
-    },
-    {
-        texto: "Tu valor no depende\nde tu productividad.",
-        autor: "Humanidad"
-    },
-    {
-        texto: "Está bien no estar bien.\nEstá bien pedir ayuda.",
-        autor: "Normalización"
-    },
-    {
-        texto: "El progreso no es lineal.\nCada paso cuenta.",
-        autor: "Proceso"
-    },
-    {
-        texto: "Eres más fuerte\nde lo que crees.",
-        autor: "Fortaleza interior"
-    },
-    {
-        texto: "La felicidad es un camino,\nno un destino.",
-        autor: "Buddha"
-    }
+    { texto: "Respira hondo, el día es nuevo.\nCada instante es una oportunidad.", autor: "Mindfulness" },
+    { texto: "La calma no está en la ausencia de tormentas,\nsino en la paz interior que cultivas.", autor: "Anónimo" },
+    { texto: "Tus pensamientos son semillas.\nRiega las que quieres ver crecer.", autor: "Sabiduría popular" },
+    { texto: "No es el estrés lo que nos mata,\nsino nuestra reacción ante él.", autor: "Hans Selye" },
+    { texto: "Hoy elijo la paz.\nHoy elijo el bienestar.", autor: "Afirmación diaria" },
+    { texto: "El autocuidado no es egoísmo,\nes autopreservación.", autor: "Audre Lorde" },
+    { texto: "Pequeños pasos cada día\nconstruyen grandes cambios.", autor: "Motivación" },
+    { texto: "Tu salud mental merece\nla misma atención que tu salud física.", autor: "Conciencia" },
+    { texto: "No estás solo en este camino.\nPedir ayuda es valentía.", autor: "Apoyo" },
+    { texto: "La ansiedad es temporal.\nTú eres eterno.", autor: "Fortaleza" },
+    { texto: "Cada día sin compararte\nes un día ganado.", autor: "Autoaceptación" },
+    { texto: "Tus emociones son válidas.\nNo necesitas justificarlas.", autor: "Empatía" },
+    { texto: "El descanso no es debilidad,\nes necesidad.", autor: "Autocuidado" },
+    { texto: "Hoy es perfecto para empezar\na cuidar de ti.", autor: "Hoy" },
+    { texto: "No puedes controlar el viento,\npero sí ajustar tus velas.", autor: "Resiliencia" },
+    { texto: "Tu valor no depende\nde tu productividad.", autor: "Humanidad" },
+    { texto: "Está bien no estar bien.\nEstá bien pedir ayuda.", autor: "Normalización" },
+    { texto: "El progreso no es lineal.\nCada paso cuenta.", autor: "Proceso" },
+    { texto: "Eres más fuerte\nde lo que crees.", autor: "Fortaleza interior" },
+    { texto: "La felicidad es un camino,\nno un destino.", autor: "Buddha" }
 ];
 
 class DashboardManager {
     constructor() {
-        this.usuarioActual = null;
+        // Datos inyectados desde Django directamente en el HTML
+        this.rolId          = window.MINDWELL_ROL    || 0;
+        this.nombreCompleto = window.MINDWELL_NOMBRE || 'Usuario';
         this.animacionMostrada = sessionStorage.getItem('welcomeShown') === 'true';
     }
 
     async init() {
         try {
-            // 1. Cargar información del usuario
-            await this.cargarUsuarioActual();
-            
-            // 2. Mostrar animación de bienvenida (solo primera vez por sesión)
+            // 1. Animación de bienvenida (solo la primera vez por sesión)
             if (!this.animacionMostrada) {
                 await this.mostrarBienvenida();
                 sessionStorage.setItem('welcomeShown', 'true');
             }
-            
-            // 3. Cargar estadísticas
+
+            // 2. Cargar estadísticas desde la API
             await this.cargarEstadisticas();
-            
-            // 4. Mostrar poema del día
+
+            // 3. Poema del día
             this.mostrarPoemaDelDia();
-            
-            // 5. Configurar tema
+
+            // 4. Tema claro/oscuro
             this.configurarTema();
-            
-            // 6. Configurar botones
+
+            // 5. Efectos de botones
             this.configurarBotones();
-            
-            console.log('✅ Dashboard inicializado correctamente');
-            
+
+            console.log('✅ Dashboard inicializado');
         } catch (error) {
             console.error('❌ Error al inicializar dashboard:', error);
         }
     }
 
-    // ========================================================================
-    // CARGAR USUARIO ACTUAL
-    // ========================================================================
-    async cargarUsuarioActual() {
-        try {
-            const response = await fetch('/api/dashboard/usuario-actual');
-            const data = await response.json();
-            
-            if (data.success) {
-                this.usuarioActual = data;
-                console.log('👤 Usuario cargado:', data);
-            } else {
-                throw new Error(data.error || 'Error al cargar usuario');
-            }
-        } catch (error) {
-            console.error('❌ Error al cargar usuario:', error);
-            this.usuarioActual = {
-                nombreCompleto: 'Usuario',
-                tipoUsuario: 'Usuario',
-                rolId: 0
-            };
-        }
-    }
-
-    // ========================================================================
-    // ANIMACIÓN DE BIENVENIDA
-    // ========================================================================
+    // ──────────────────────────────────────────────
+    //  ANIMACIÓN DE BIENVENIDA
+    // ──────────────────────────────────────────────
     async mostrarBienvenida() {
         return new Promise((resolve) => {
-            // Crear overlay
             const overlay = document.createElement('div');
             overlay.id = 'welcome-overlay';
             overlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100vw;
-                height: 100vh;
-                background: rgba(0, 0, 0, 0.85);
+                position: fixed; top: 0; left: 0;
+                width: 100vw; height: 100vh;
+                background: rgba(0,0,0,0.85);
                 backdrop-filter: blur(10px);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 10000;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-                cursor: pointer;
+                display: flex; align-items: center; justify-content: center;
+                z-index: 10000; opacity: 0;
+                transition: opacity 0.3s ease; cursor: pointer;
             `;
 
-            // Crear línea de bienvenida
-            const welcomeLine = document.createElement('div');
-            welcomeLine.style.cssText = `
+            const tipoLabel = { 1: 'Administrador', 2: 'Aprendiz', 3: 'Instructor' }[this.rolId] || 'Usuario';
+            const emoji     = this.rolId === 3 ? '🧘‍♀️' : this.rolId === 1 ? '🛡️' : '🎓';
+
+            const card = document.createElement('div');
+            card.style.cssText = `
                 background: linear-gradient(135deg, #00966C, #00C389);
-                color: white;
-                padding: 2rem 3rem;
-                border-radius: 15px;
-                font-size: 1.8rem;
-                font-weight: 600;
-                text-align: center;
-                box-shadow: 0 10px 40px rgba(0, 150, 108, 0.5);
+                color: white; padding: 2rem 3rem; border-radius: 15px;
+                font-size: 1.8rem; font-weight: 600; text-align: center;
+                box-shadow: 0 10px 40px rgba(0,150,108,0.5);
                 transform: scale(0);
-                transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                transition: transform 0.5s cubic-bezier(0.68,-0.55,0.265,1.55);
                 max-width: 600px;
             `;
-            
-            const tipoUsuarioEmoji = this.usuarioActual.rolId === 3 ? '🧘‍♀️' : '🎓';
-            welcomeLine.innerHTML = `
-                <div style="margin-bottom: 0.5rem; font-size: 3rem;">
-                    ${tipoUsuarioEmoji}
-                </div>
-                <div style="font-size: 1.4rem; margin-bottom: 0.5rem;">
-                    ¡Bienvenido ${this.usuarioActual.tipoUsuario}!
-                </div>
-                <div style="font-size: 2rem; font-weight: 700;">
-                    ${this.usuarioActual.nombreCompleto}
-                </div>
-                <div style="font-size: 0.9rem; margin-top: 1rem; opacity: 0.8;">
-                    Haz clic para continuar
-                </div>
+            card.innerHTML = `
+                <div style="margin-bottom:.5rem;font-size:3rem;">${emoji}</div>
+                <div style="font-size:1.4rem;margin-bottom:.5rem;">¡Bienvenido ${tipoLabel}!</div>
+                <div style="font-size:2rem;font-weight:700;">${this.nombreCompleto}</div>
+                <div style="font-size:.9rem;margin-top:1rem;opacity:.8;">Haz clic para continuar</div>
             `;
 
-            overlay.appendChild(welcomeLine);
+            overlay.appendChild(card);
             document.body.appendChild(overlay);
 
-            // Animar entrada
-            setTimeout(() => {
-                overlay.style.opacity = '1';
-                welcomeLine.style.transform = 'scale(1)';
-            }, 100);
+            setTimeout(() => { overlay.style.opacity = '1'; card.style.transform = 'scale(1)'; }, 100);
 
-            // Cerrar al hacer clic o después de 3 segundos
             const cerrar = () => {
                 overlay.style.opacity = '0';
-                welcomeLine.style.transform = 'scale(0)';
-                setTimeout(() => {
-                    overlay.remove();
-                    resolve();
-                }, 300);
+                card.style.transform = 'scale(0)';
+                setTimeout(() => { overlay.remove(); resolve(); }, 300);
             };
 
             overlay.addEventListener('click', cerrar);
@@ -227,82 +112,49 @@ class DashboardManager {
         });
     }
 
-    // ========================================================================
-    // CARGAR ESTADÍSTICAS
-    // ========================================================================
+    // ──────────────────────────────────────────────
+    //  ESTADÍSTICAS
+    // ──────────────────────────────────────────────
     async cargarEstadisticas() {
         try {
-            const response = await fetch('/api/dashboard/estadisticas');
-            const data = await response.json();
-            
+            const res  = await fetch('/api/dashboard/estadisticas');
+            const data = await res.json();
             if (data.success) {
-                // Actualizar tarjetas de estadísticas
-                this.actualizarEstadistica('stat-usuarios', data.totalUsuarios);
-                this.actualizarEstadistica('stat-aprendices', data.totalAprendices);
-                this.actualizarEstadistica('stat-orientadores', data.totalOrientadores);
-                
-                console.log('📊 Estadísticas cargadas:', data);
-            } else {
-                throw new Error(data.error || 'Error al cargar estadísticas');
+                this._animar('stat-usuarios',    data.totalUsuarios);
+                this._animar('stat-aprendices',  data.totalAprendices);
+                this._animar('stat-orientadores', data.totalOrientadores);
             }
-        } catch (error) {
-            console.error('❌ Error al cargar estadísticas:', error);
-            this.actualizarEstadistica('stat-usuarios', 0);
-            this.actualizarEstadistica('stat-aprendices', 0);
-            this.actualizarEstadistica('stat-orientadores', 0);
+        } catch (err) {
+            console.error('❌ Error estadísticas:', err);
         }
     }
 
-    actualizarEstadistica(elementId, valor) {
-        const elemento = document.getElementById(elementId);
-        if (elemento) {
-            // Animación de conteo
-            const valorActual = parseInt(elemento.textContent) || 0;
-            this.animarContador(elemento, valorActual, valor, 1000);
-        }
-    }
-
-    animarContador(elemento, desde, hasta, duracion) {
+    _animar(id, hasta) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const desde  = 0;
         const inicio = Date.now();
-        const diferencia = hasta - desde;
-        
-        const animar = () => {
-            const transcurrido = Date.now() - inicio;
-            const progreso = Math.min(transcurrido / duracion, 1);
-            
-            // Easing suave
-            const valorActual = Math.floor(desde + (diferencia * this.easeOutQuart(progreso)));
-            elemento.textContent = valorActual;
-            
-            if (progreso < 1) {
-                requestAnimationFrame(animar);
-            }
+        const dur    = 1000;
+        const tick   = () => {
+            const t = Math.min((Date.now() - inicio) / dur, 1);
+            el.textContent = Math.floor(desde + (hasta - desde) * (1 - Math.pow(1 - t, 4)));
+            if (t < 1) requestAnimationFrame(tick);
         };
-        
-        animar();
+        tick();
     }
 
-    easeOutQuart(x) {
-        return 1 - Math.pow(1 - x, 4);
-    }
-
-    // ========================================================================
-    // POEMA DEL DÍA
-    // ========================================================================
+    // ──────────────────────────────────────────────
+    //  POEMA DEL DÍA
+    // ──────────────────────────────────────────────
     mostrarPoemaDelDia() {
         const container = document.getElementById('poema-container');
         if (!container) return;
 
-        // Seleccionar poema basado en el día del año
-        const hoy = new Date();
-        const inicioAño = new Date(hoy.getFullYear(), 0, 0);
-        const diff = hoy - inicioAño;
-        const unDia = 1000 * 60 * 60 * 24;
-        const diaDelAño = Math.floor(diff / unDia);
-        const indicePoema = diaDelAño % POEMAS_DIARIOS.length;
-        
-        const poema = POEMAS_DIARIOS[indicePoema];
-        
+        const hoy   = new Date();
+        const ini   = new Date(hoy.getFullYear(), 0, 0);
+        const dia   = Math.floor((hoy - ini) / 86400000);
+        const poema = POEMAS_DIARIOS[dia % POEMAS_DIARIOS.length];
+
         container.innerHTML = `
             <div class="poema-card">
                 <div class="poema-header">
@@ -310,74 +162,57 @@ class DashboardManager {
                     <h3 class="poema-title">Reflexión del Día</h3>
                 </div>
                 <div class="poema-content">
-                    <p class="poema-texto">${poema.texto}</p>
+                    <p class="poema-texto">${poema.texto.replace(/\n/g, '<br>')}</p>
                     <p class="poema-autor">— ${poema.autor}</p>
                 </div>
-            </div>
-        `;
+            </div>`;
     }
 
-    // ========================================================================
-    // CONFIGURAR TEMA
-    // ========================================================================
+    // ──────────────────────────────────────────────
+    //  TEMA
+    // ──────────────────────────────────────────────
     configurarTema() {
-        const body = document.body;
-        const themeIcon = document.getElementById('theme-icon');
-        const themeToggle = document.getElementById('theme-toggle');
+        const body   = document.body;
+        const icon   = document.getElementById('theme-icon');
+        const toggle = document.getElementById('theme-toggle');
+        if (!toggle) return;
 
-        if (!themeToggle) return;
-
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
+        if (localStorage.getItem('theme') === 'dark') {
             body.setAttribute('data-theme', 'dark');
-            themeIcon.textContent = '☀️';
+            if (icon) icon.textContent = '☀️';
         } else {
-            themeIcon.textContent = '🌙';
+            if (icon) icon.textContent = '🌙';
         }
 
-        themeToggle.addEventListener('click', () => {
-            if (body.getAttribute('data-theme') === 'dark') {
-                body.removeAttribute('data-theme');
-                themeIcon.textContent = '🌙';
-                localStorage.setItem('theme', 'light');
-            } else {
-                body.setAttribute('data-theme', 'dark');
-                themeIcon.textContent = '☀️';
-                localStorage.setItem('theme', 'dark');
-            }
+        toggle.addEventListener('click', () => {
+            const dark = body.getAttribute('data-theme') === 'dark';
+            body.setAttribute('data-theme', dark ? '' : 'dark');
+            if (icon) icon.textContent = dark ? '🌙' : '☀️';
+            localStorage.setItem('theme', dark ? 'light' : 'dark');
         });
     }
 
-    // ========================================================================
-    // CONFIGURAR BOTONES
-    // ========================================================================
+    // ──────────────────────────────────────────────
+    //  BOTONES
+    // ──────────────────────────────────────────────
     configurarBotones() {
-        // Los botones ya tienen sus enlaces en el HTML
-        // Solo agregamos efectos visuales
-        const actionBtns = document.querySelectorAll('.action-btn');
-        actionBtns.forEach(btn => {
-            btn.addEventListener('mouseenter', function() {
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('mouseenter', function () {
                 this.style.transform = 'translateY(-3px) scale(1.02)';
             });
-            btn.addEventListener('mouseleave', function() {
+            btn.addEventListener('mouseleave', function () {
                 this.style.transform = 'translateY(0) scale(1)';
             });
         });
     }
 }
 
-// ============================================================================
-// TOGGLE SIDEBAR
-// ============================================================================
+// ── Sidebar toggle ──
 function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('closed');
+    document.getElementById('sidebar')?.classList.toggle('closed');
 }
 
-// ============================================================================
-// INICIALIZACIÓN
-// ============================================================================
+// ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
-    const dashboardManager = new DashboardManager();
-    dashboardManager.init();
+    new DashboardManager().init();
 });

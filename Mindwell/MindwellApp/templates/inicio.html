@@ -4,16 +4,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MindWell</title>
+  {% load static %}
+  <title>{% block titulo %}MindWell{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
- <link rel="stylesheet" href="css/index.css">
+ <link rel="stylesheet" href="{% static 'css/index.css' %}">
 </head>
 <body>
   <header class="header">
     <div class="logo-box">
-      <img src="img/logo.png" alt="Logo MindWell" class="logo-img" />
+      <img src="{% static 'img/ogo.png' %}" alt="Logo MindWell" class="logo-img" />
       <h1 class="logo-text">MINDWELL</h1>
     </div>
     <nav>
@@ -26,21 +27,21 @@
     <button class="btn-nav left" id="back" aria-label="Anterior">&#10094;</button>
     <div class="slider" id="slider-container">
       <div class="slide">
-        <img src="img/fondo1.png" alt="Ciudad pixel art">
+        <img src="{% static 'img/fondo1.png'%}" alt="Ciudad pixel art">
         <div class="overlay">
           <h2>MINDWELL</h2>
           <p>Proyecto de vida y bienestar</p>
         </div>
       </div>
       <div class="slide">
-        <img src="img/fondo.png" alt="Fondo colorido">
+        <img src="{% static 'img/fondo.png' %}" alt="Fondo colorido">
         <div class="overlay">
           <h2>MINDWELL</h2>
           <p>Descubre tu propósito</p>
         </div>
       </div>
       <div class="slide">
-        <img src="img/fondo 2.jpg" alt="Paisaje imaginario">
+        <img src="{% static 'img/fondo 2.jpg' %}" alt="Paisaje imaginario">
         <div class="overlay">
           <h2>MINDWELL</h2>
           <p>Una comunidad para crecer</p>
@@ -58,7 +59,7 @@
           <div class="front">
             <h2>Bienestar</h2>
             <p>Consejos para mejorar tu día a día.</p>
-            <img src="img/fondo.png" class="info-img" alt="Ilustración de bienestar" />
+            <img src="{% static '/img/fondo.png' %}" class="info-img" alt="Ilustración de bienestar" />
           </div>
           <div class="back">
             <h2>Bienestar</h2>
@@ -91,7 +92,7 @@
     <p>Una herramienta visual para mirar desde nuevas perspectivas.</p>
   </div>
   <div class="interactive-image-container">
-    <img id="interactive-img" src="img/avantar.webp" alt="Avatar interactivo">
+    <img id="interactive-img" src="{% static 'img/avantar.webp' %}" alt="Avatar interactivo">
   </div>
 </section>
 
@@ -100,6 +101,7 @@
     <p>&copy; Team scrum 9 Sena.</p>
   </footer>
 
-  <script src="js/carrusel.js"></script>
+  <script src="{% static 'js/carrusel.js '%}"></script>
+  {% block scripts_extra %}{% endblock %}
 </body>
 </html>

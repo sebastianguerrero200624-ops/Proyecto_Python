@@ -1,0 +1,178 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — MindWell</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/dashboardO.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       SIDEBAR  — menú dinámico según rol
+  ════════════════════════════════════════════ -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="{% static 'img/logo.png' %}" alt="Logo MindWell" class="logo-img" />
+      <h1 class="sidebar-title">MINDWELL</h1>
+    </div>
+    <div class="toggle-btn" onclick="toggleSidebar()">▶</div>
+
+    <ul>
+      <!-- Inicio — todos los roles -->
+      <li data-icon="🏠" class="active">
+        <a href="{% url 'dashboard' %}"><span>Inicio</span></a>
+      </li>
+
+      {% if rol == 1 %}
+      <!-- ── ADMINISTRADOR ── -->
+      <li data-icon="👥">
+        <a href="/admin/usuarios"><span>Usuarios</span></a>
+      </li>
+      <li data-icon="📊">
+        <a href="/admin/reportes"><span>Reportes</span></a>
+      </li>
+      <li data-icon="⚙️">
+        <a href="/admin/configuracion"><span>Configuración</span></a>
+      </li>
+
+      {% elif rol == 2 %}
+      <!-- ── APRENDIZ ── -->
+      <li data-icon="📅">
+        <a href="/aprendiz/citas"><span>Mis Citas</span></a>
+      </li>
+      <li data-icon="🔍">
+        <a href="/aprendiz/proceso"><span>Consultar Proceso</span></a>
+      </li>
+      <li data-icon="🎓">
+        <a href="/aprendiz/talleres"><span>Talleres</span></a>
+      </li>
+      <li data-icon="🧘">
+        <a href="/aprendiz/bienestar"><span>Bienestar</span></a>
+      </li>
+
+      {% elif rol == 3 %}
+      <!-- ── INSTRUCTOR / PSICOSOCIAL ── -->
+      <li data-icon="📅">
+        <a href="/orientador/gestionarCita"><span>Gestionar Citas</span></a>
+      </li>
+      <li data-icon="🎓">
+        <a href="/orientador/actividades"><span>Talleres</span></a>
+      </li>
+      <li data-icon="📈">
+        <a href="/orientador/resultados"><span>Resultados</span></a>
+      </li>
+      <li data-icon="🧘‍♀️">
+        <a href="/orientador/bienestar"><span>Ejercicios</span></a>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       HEADER
+  ════════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header-title">
+      {% if rol == 1 %}Dashboard Administrador
+      {% elif rol == 2 %}Dashboard Aprendiz
+      {% elif rol == 3 %}Dashboard Instructor
+      {% else %}Dashboard
+      {% endif %}
+    </div>
+    <div class="user-info">
+      <!-- Muestra nombres y apellidos de la BD, NO el username -->
+      <div class="user-avatar">{{ nombres }} {{ apellidos }}</div>
+      <span class="rol-badge">{{ rol_label }}</span>
+      <a href="{% url 'cerrar_sesion' %}" class="btn-sesion" id="btn-sesion">Cerrar sesión</a>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN CONTENT
+  ════════════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- Estadísticas rápidas — iguales para todos los roles -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">👥</span>
+        <div class="stat-value" id="stat-usuarios">0</div>
+        <div class="stat-label">Usuarios Activos</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🎓</span>
+        <div class="stat-value" id="stat-aprendices">0</div>
+        <div class="stat-label">Aprendices</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🧘‍♀️</span>
+        <div class="stat-value" id="stat-orientadores">0</div>
+        <div class="stat-label">Instructores</div>
+      </div>
+    </div>
+
+    <!-- Acciones rápidas — dinámicas por rol -->
+    <div class="quick-actions">
+
+      {% if rol == 1 %}
+      <a href="/admin/usuarios" class="action-btn">👥 <span>Ver Usuarios</span></a>
+      <a href="/admin/reportes" class="action-btn">📊 <span>Reportes</span></a>
+      <a href="/admin/configuracion" class="action-btn">⚙️ <span>Configuración</span></a>
+
+      {% elif rol == 2 %}
+      <a href="/aprendiz/citas" class="action-btn">📅 <span>Nueva Cita</span></a>
+      <a href="/aprendiz/proceso" class="action-btn">🔍 <span>Consultar Proceso</span></a>
+      <a href="/aprendiz/talleres" class="action-btn">🎓 <span>Talleres</span></a>
+      <a href="/aprendiz/bienestar" class="action-btn">🧘 <span>Bienestar</span></a>
+
+      {% elif rol == 3 %}
+      <a href="/orientador/gestionarCita" class="action-btn">📅 <span>Nueva Cita</span></a>
+      <a href="/orientador/resultados" class="action-btn">🔍 <span>Ver Diagnóstico</span></a>
+      <a href="/orientador/actividades" class="action-btn">🎓 <span>Talleres</span></a>
+      <a href="/orientador/bienestar" class="action-btn">🧘‍♀️ <span>Ejercicios</span></a>
+      {% endif %}
+
+    </div>
+
+    <!-- Poema del día -->
+    <div id="poema-container"></div>
+
+    <!-- Contenido extra por rol -->
+    {% if rol == 1 %}
+    <section class="rol-section">
+      <h2 class="section-title">👥 Listado de Usuarios</h2>
+      <p style="color:#888;font-size:14px;">
+        Aquí irá la tabla de usuarios del sistema.
+      </p>
+    </section>
+    {% endif %}
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 Team Scrum 2 — SENA</p>
+  </footer>
+
+  <!-- Botón de tema claro/oscuro -->
+  <button class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema">
+    <span id="theme-icon">🌙</span>
+  </button>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="{% static 'js/dashboard.js' %}"></script>
+
+  <!-- Pasar el rol al JS sin exponer lógica extra -->
+  <script>
+    window.MINDWELL_ROL = {{ rol }};
+    window.MINDWELL_NOMBRE = "{{ nombres }} {{ apellidos }}";
+  </script>
+
+</body>
+</html>

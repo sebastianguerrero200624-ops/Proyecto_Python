@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block titulo %}MindWell — Nueva Contraseña{% endblock %}
+{% block auth_titulo %}Crea una nueva contraseña{% endblock %}
+{% block auth_subtitulo %}Elige una contraseña segura para tu cuenta{% endblock %}
+
+{% block formularios %}
+
+  {% if id_usr %}
+
+    {# ── Formulario disponible: el token era válido ── #}
+    <form class="form active" method="POST" action="{% url 'cambiarpass' %}">
+      {% csrf_token %}
+      <input type="hidden" name="id" value="{{ id_usr }}">
+
+      <div class="input-row">
+
+        {# NUEVA CONTRASEÑA #}
+        <div class="input-group full-width">
+          <div class="input-container">
+            <input type="password" class="form-input" id="nuevaPass"
+                   name="pass" placeholder=" " required minlength="8">
+            <label class="floating-label">Nueva contraseña</label>
+            <button type="button" class="password-toggle" data-target="nuevaPass">👁️</button>
+          </div>
+          <div class="password-strength">
+            <div class="strength-bar">
+              <div class="strength-fill" id="strengthFill"></div>
+            </div>
+            <div class="strength-text" id="strengthText">Ingresa una contraseña</div>
+          </div>
+          <div class="error-message" id="nuevaPassError">
+            <span>⚠️</span><span class="error-text"></span>
+          </div>
+        </div>
+
+        {# CONFIRMAR CONTRASEÑA #}
+        <div class="input-group full-width">
+          <div class="input-container">
+            <input type="password" class="form-input" id="confirmaPass"
+                   name="pass2" placeholder=" " required minlength="8">
+            <label class="floating-label">Confirmar contraseña</label>
+            <button type="button" class="password-toggle" data-target="confirmaPass">👁️</button>
+          </div>
+          <div class="error-message" id="confirmaPassError">
+            <span>⚠️</span><span class="error-text"></span>
+          </div>
+        </div>
+
+      </div>
+
+      {# Mensaje de error si las contraseñas no coinciden (desde Django) #}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="django-msg django-msg--{{ message.tags }}" style="margin: 10px 0;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <button type="submit" class="btn btn-primary" id="btnCambiarPass">
+        <span class="btn-text">Guardar nueva contraseña</span>
+        <span class="loading-spinner"></span>
+      </button>
+
+    </form>
+
+  {% else %}
+
+    {# ── Enlace inválido o ya utilizado ── #}
+    <div style="text-align:center; padding: 30px 20px;">
+      <div style="font-size: 60px; margin-bottom: 20px;">🔗</div>
+      <h3 style="font-family:'Merriweather',serif; margin-bottom: 12px; color: #2d2d2d;">
+        Enlace no válido
+      </h3>
+      <p style="color: #666; font-size: 14px; line-height: 1.7; margin-bottom: 28px;">
+        Este enlace de recuperación no es válido o ya fue utilizado.<br>
+        Solicita uno nuevo desde la página de recuperación.
+      </p>
+      <a href="{% url 'recup' %}" class="btn btn-primary"
+         style="display:inline-block; text-decoration:none; padding: 12px 30px;">
+        Solicitar nuevo enlace
+      </a>
+    </div>
+
+  {% endif %}
+
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const pass1 = document.getElementById('nuevaPass');
+  const pass2 = document.getElementById('confirmaPass');
+  const btn   = document.getElementById('btnCambiarPass');
+  const err2  = document.getElementById('confirmaPassError');
+
+  if (!pass1 || !pass2) return;
+
+  function validarCoincidencia() {
+    if (pass2.value && pass1.value !== pass2.value) {
+      err2.classList.add('show');
+      err2.querySelector('.error-text').textContent = 'Las contraseñas no coinciden.';
+      if (btn) btn.disabled = true;
+    } else {
+      err2.classList.remove('show');
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  pass1.addEventListener('input', validarCoincidencia);
+  pass2.addEventListener('input', validarCoincidencia);
+});
+</script>
+{% endblock %}

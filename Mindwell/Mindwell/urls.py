@@ -20,9 +20,12 @@ from django.conf.urls.static import static
 from Mindwell import settings
 
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('inicio/', include('MindwellApp.urls')),
     path('', include('AutenticarApp.urls')),
+    path('autenticar/', include('AutenticarApp.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
