@@ -53,6 +53,8 @@ class DashboardManager {
             // 5. Efectos de botones
             this.configurarBotones();
 
+            this.configurarCerrarSesion();
+
             console.log('✅ Dashboard inicializado');
         } catch (error) {
             console.error('❌ Error al inicializar dashboard:', error);
@@ -191,6 +193,32 @@ class DashboardManager {
             localStorage.setItem('theme', dark ? 'light' : 'dark');
         });
     }
+
+    configurarCerrarSesion() {
+    const btn = document.getElementById('btn-sesion');
+    if (!btn) return;
+
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        Swal.fire({
+            title: '¿Cerrar sesión?',
+            text: 'Vas a salir de tu cuenta',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#00966C',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, cerrar sesión',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = btn.href;
+            }
+        });
+    });
+}
+
+    
 
     // ──────────────────────────────────────────────
     //  BOTONES

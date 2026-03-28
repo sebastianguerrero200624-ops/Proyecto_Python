@@ -342,7 +342,7 @@ body {
   gap: 1rem;
 }
 .user-avatar {
-  width: 80px;
+  width: 200px;
   height: 40px;
   border-radius: 20%;
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));

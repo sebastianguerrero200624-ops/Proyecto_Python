@@ -27,7 +27,7 @@ INSTALLED_APPS = [
 
     # Apps propias
     'AutenticarApp',
-    'Gestionar_Citas',
+    'GestionarCitasApp',
     'MindwellApp',
 ]
 
@@ -97,7 +97,7 @@ STATIC_URL = '/static/'
 
 # Carpeta global de estáticos (css, js, img compartidos entre apps)
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+    BASE_DIR / 'Mindwell' / 'static',
 ]
 
 MEDIA_URL = '/media/'

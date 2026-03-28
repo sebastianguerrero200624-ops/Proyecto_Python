@@ -34,7 +34,7 @@ def dashboard(request):
         'rol':       rol,
         'rol_label': ROL_LABEL.get(rol, 'Usuario'),
     }
-    return render(request, 'MindwellApp/dashboard.html', contexto)
+    return render(request, 'dashboard.html', contexto)
 
 
 # ──────────────────────────────────────────────
