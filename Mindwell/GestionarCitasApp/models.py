@@ -12,31 +12,44 @@ class Cita(models.Model):
         ('FINALIZADA',   'Finalizada'),
     ]
 
+    PRIORIDAD_CHOICES = [
+        ('ALTA',  'Alta'),
+        ('MEDIA', 'Media'),
+        ('BAJA',  'Baja'),
+    ]
+
     # ── Participantes ──────────────────────────────────────────────
-    # estudiante → Perfil con rol_id=2
-    # orientador → Perfil con rol_id=3
-    estudiante  = models.ForeignKey(
+    estudiante = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='citas_como_estudiante',
         help_text='Usuario con rol Aprendiz (rol_id=2)'
     )
-    orientador  = models.ForeignKey(
+    orientador = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='citas_como_orientador',
         help_text='Usuario con rol Instructor/Psicosocial (rol_id=3)'
     )
 
     # ── Datos de la cita ───────────────────────────────────────────
-    fecha       = models.DateField()
-    hora        = models.TimeField()
-    motivo      = models.CharField(max_length=255)
-    estado      = models.CharField(max_length=15, choices=ESTADO_CHOICES, default='PENDIENTE')
+    fecha  = models.DateField()
+    hora   = models.TimeField()
+    motivo = models.CharField(max_length=255)
+    estado = models.CharField(max_length=15, choices=ESTADO_CHOICES, default='PENDIENTE')
+
+    # Prioridad calculada automáticamente al crear (puede ser editada por el orientador)
+    prioridad = models.CharField(
+        max_length=5, choices=PRIORIDAD_CHOICES, default='MEDIA',
+        help_text='Prioridad estimada según el motivo'
+    )
 
     # ── Reprogramación ─────────────────────────────────────────────
-    # Solo el orientador puede reprogramar citas en estado APROBADA
-    fecha_reprogramada = models.DateField(null=True, blank=True)
-    hora_reprogramada  = models.TimeField(null=True, blank=True)
+    fecha_reprogramada    = models.DateField(null=True, blank=True)
+    hora_reprogramada     = models.TimeField(null=True, blank=True)
     motivo_reprogramacion = models.CharField(max_length=255, blank=True, default='')
+
+    # ── Cancelación ────────────────────────────────────────────────
+    # Solo el orientador registra motivo al cancelar
+    motivo_cancelacion = models.CharField(max_length=255, blank=True, default='')
 
     # ── Auditoría ──────────────────────────────────────────────────
     creado_en   = models.DateTimeField(auto_now_add=True)
@@ -57,12 +70,10 @@ class Cita(models.Model):
     # ── Propiedades de conveniencia ────────────────────────────────
     @property
     def fecha_efectiva(self):
-        """Fecha real (reprogramada si existe, original si no)."""
         return self.fecha_reprogramada or self.fecha
 
     @property
     def hora_efectiva(self):
-        """Hora real (reprogramada si existe, original si no)."""
         return self.hora_reprogramada or self.hora
 
     # ── Reglas de negocio ─────────────────────────────────────────

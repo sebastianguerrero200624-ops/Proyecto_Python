@@ -2,10 +2,9 @@ from datetime import date, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.utils import timezone
 import json
 
 from AutenticarApp.models import Perfil
@@ -24,20 +23,22 @@ def _json_body(request):
 
 
 def _cita_to_dict(cita, rol):
-    """Serializa una Cita a dict para JSON responses."""
     d = {
-        'id':           cita.pk,
-        'fecha':        str(cita.fecha),
-        'hora':         str(cita.hora)[:5],
-        'motivo':       cita.motivo,
-        'estado':       cita.estado,
-        'fechaEfectiva': str(cita.fecha_efectiva),
-        'horaEfectiva':  str(cita.hora_efectiva)[:5],
-        'creadoEn':     cita.creado_en.strftime('%Y-%m-%d %H:%M'),
+        'id':                   cita.pk,
+        'fecha':                str(cita.fecha),
+        'hora':                 str(cita.hora)[:5],
+        'motivo':               cita.motivo,
+        'estado':               cita.estado,
+        'prioridad':            cita.prioridad,
+        'fechaEfectiva':        str(cita.fecha_efectiva),
+        'horaEfectiva':         str(cita.hora_efectiva)[:5],
+        'creadoEn':             cita.creado_en.strftime('%Y-%m-%d %H:%M'),
+        'motivoReprogramacion': cita.motivo_reprogramacion or '',
+        'motivoCancelacion':    cita.motivo_cancelacion or '',
     }
-    if rol == 3:  # orientador ve el nombre del estudiante
+    if rol == 3:
         d['nombreEstudiante'] = cita.estudiante.get_full_name() or cita.estudiante.username
-    if rol == 2:  # estudiante ve el nombre del orientador
+    if rol == 2:
         d['nombreOrientador'] = cita.orientador.get_full_name() or cita.orientador.username
     return d
 
@@ -50,10 +51,6 @@ def _get_perfil(user):
 
 
 def _fecha_valida(fecha_str):
-    """
-    Devuelve (fecha, error_str).
-    Reglas: mínimo mañana, máximo 2 meses desde hoy.
-    """
     try:
         fecha = date.fromisoformat(fecha_str)
     except (ValueError, TypeError):
@@ -72,13 +69,11 @@ def _fecha_valida(fecha_str):
 
 
 def _orientador_disponible(orientador, fecha, hora, excluir_cita_id=None):
-    """Verifica que el orientador no tenga otra cita aprobada/pendiente en esa fecha+hora."""
     qs = Cita.objects.filter(
         orientador=orientador,
         estado__in=('PENDIENTE', 'APROBADA', 'REPROGRAMADA'),
-    ).filter(
-        # Chequea tanto fecha original como reprogramada
-        fecha=fecha, hora=hora,
+        fecha=fecha,
+        hora=hora,
     )
     if excluir_cita_id:
         qs = qs.exclude(pk=excluir_cita_id)
@@ -86,11 +81,58 @@ def _orientador_disponible(orientador, fecha, hora, excluir_cita_id=None):
 
 
 def _orientador_tiene_cupo(orientador):
-    """Máximo 4 citas pendientes por orientador."""
     return Cita.objects.filter(
         orientador=orientador,
         estado='PENDIENTE'
     ).count() < 4
+
+
+def _calcular_prioridad(motivo):
+    """
+    Analiza el motivo y devuelve ALTA, MEDIA o BAJA.
+    Palabras clave en español e inglés.
+    """
+    texto = motivo.lower()
+
+    palabras_alta = [
+        # Español
+        'suicid', 'autolesion', 'autolesión', 'crisis', 'urgente', 'emergencia',
+        'depresion', 'depresión', 'ansiedad severa', 'pánico', 'panico',
+        'violencia', 'abuso', 'agresion', 'agresión', 'desesper',
+        'no puedo más', 'no puedo mas', 'me quiero morir', 'hacerme daño',
+        'ayuda urgente', 'grave', 'trauma',
+        # Inglés
+        'suicide', 'self-harm', 'self harm', 'crisis', 'urgent', 'emergency',
+        'depression', 'severe anxiety', 'panic attack', 'violence', 'abuse',
+        'desperate', 'cant go on', "can't go on",
+    ]
+
+    palabras_media = [
+        # Español
+        'ansiedad', 'estrés', 'estres', 'nervios', 'preocupacion', 'preocupación',
+        'tristeza', 'soledad', 'problema familiar', 'conflicto', 'rendimiento',
+        'académico', 'academico', 'trabajo', 'relaciones', 'pareja', 'amigos',
+        'motivacion', 'motivación', 'orientacion', 'orientación', 'vocacional',
+        'insomni', 'cansancio', 'agotamiento', 'burnout',
+        # Inglés
+        'anxiety', 'stress', 'worried', 'sadness', 'loneliness', 'family',
+        'conflict', 'academic', 'performance', 'relationship', 'friends',
+        'motivation', 'guidance', 'insomnia', 'tired', 'exhausted',
+    ]
+
+    for p in palabras_alta:
+        if p in texto:
+            return 'ALTA'
+
+    for p in palabras_media:
+        if p in texto:
+            return 'MEDIA'
+
+    # Si el motivo es muy corto o genérico, poner MEDIA para revisión
+    if len(texto.strip()) < 10:
+        return 'MEDIA'
+
+    return 'BAJA'
 
 
 # ─────────────────────────────────────────────
@@ -104,7 +146,6 @@ def gestionar_citas(request):
         messages.error(request, 'No tienes permiso para acceder a esta sección.')
         return redirect('dashboard')
 
-    # Lista de orientadores activos con cupo disponible (para el select del estudiante)
     orientadores = []
     if perfil.rol_id == 2:
         for p in Perfil.objects.filter(rol_id=3, activo=True).select_related('user'):
@@ -118,7 +159,7 @@ def gestionar_citas(request):
         'rol':          perfil.rol_id,
         'nombres':      request.user.first_name,
         'apellidos':    request.user.last_name,
-        'rol_label':    {2: 'Aprendiz', 3: 'Instructor'}.get(perfil.rol_id, ''),
+        'rol_label':    {2: 'Aprendiz', 3: 'Orientador'}.get(perfil.rol_id, ''),
         'orientadores': orientadores,
     }
     return render(request, 'gestionar_citas.html', contexto)
@@ -141,7 +182,6 @@ def api_listar_citas(request):
     else:
         return JsonResponse({'error': 'Rol no autorizado'}, status=403)
 
-    # Filtros opcionales via GET
     estado = request.GET.get('estado')
     fecha  = request.GET.get('fecha')
     if estado:
@@ -149,13 +189,11 @@ def api_listar_citas(request):
     if fecha:
         citas = citas.filter(fecha=fecha)
 
-    return JsonResponse({
-        'citas': [_cita_to_dict(c, perfil.rol_id) for c in citas]
-    })
+    return JsonResponse({'citas': [_cita_to_dict(c, perfil.rol_id) for c in citas]})
 
 
 # ─────────────────────────────────────────────
-#  API — LISTAR ORIENTADORES CON CUPO
+#  API — ORIENTADORES CON CUPO
 # ─────────────────────────────────────────────
 
 @login_required(login_url='/autenticar/login')
@@ -171,7 +209,7 @@ def api_orientadores(request):
 
 
 # ─────────────────────────────────────────────
-#  API — CREAR CITA (solo estudiante)
+#  API — CREAR CITA
 # ─────────────────────────────────────────────
 
 @login_required(login_url='/autenticar/login')
@@ -181,13 +219,12 @@ def api_crear_cita(request):
     if not perfil or perfil.rol_id != 2:
         return JsonResponse({'error': 'Solo los aprendices pueden solicitar citas.'}, status=403)
 
-    data         = _json_body(request)
+    data          = _json_body(request)
     orientador_id = data.get('orientador_id')
-    fecha_str    = data.get('fecha')
-    hora_str     = data.get('hora')
-    motivo       = data.get('motivo', '').strip()
+    fecha_str     = data.get('fecha')
+    hora_str      = data.get('hora')
+    motivo        = data.get('motivo', '').strip()
 
-    # Validaciones básicas
     if not all([orientador_id, fecha_str, hora_str, motivo]):
         return JsonResponse({'error': 'Todos los campos son obligatorios.'}, status=400)
 
@@ -196,7 +233,8 @@ def api_crear_cita(request):
         return JsonResponse({'error': err}, status=400)
 
     try:
-        hora = __import__('datetime').time.fromisoformat(hora_str)
+        import datetime
+        hora = datetime.time.fromisoformat(hora_str)
     except ValueError:
         return JsonResponse({'error': 'Formato de hora inválido.'}, status=400)
 
@@ -214,6 +252,8 @@ def api_crear_cita(request):
     if not _orientador_disponible(orientador, fecha, hora):
         return JsonResponse({'error': 'El orientador no está disponible en esa fecha y hora.'}, status=400)
 
+    prioridad = _calcular_prioridad(motivo)
+
     cita = Cita.objects.create(
         estudiante=request.user,
         orientador=orientador,
@@ -221,12 +261,18 @@ def api_crear_cita(request):
         hora=hora,
         motivo=motivo,
         estado='PENDIENTE',
+        prioridad=prioridad,
     )
-    return JsonResponse({'ok': True, 'id': cita.pk, 'mensaje': 'Cita solicitada exitosamente.'}, status=201)
+    return JsonResponse({
+        'ok': True,
+        'id': cita.pk,
+        'prioridad': prioridad,
+        'mensaje': 'Cita solicitada exitosamente.'
+    }, status=201)
 
 
 # ─────────────────────────────────────────────
-#  API — APROBAR CITA (solo orientador)
+#  API — APROBAR CITA
 # ─────────────────────────────────────────────
 
 @login_required(login_url='/autenticar/login')
@@ -247,7 +293,7 @@ def api_aprobar_cita(request, cita_id):
 
 
 # ─────────────────────────────────────────────
-#  API — REPROGRAMAR CITA (solo orientador, solo si APROBADA)
+#  API — REPROGRAMAR CITA
 # ─────────────────────────────────────────────
 
 @login_required(login_url='/autenticar/login')
@@ -275,7 +321,8 @@ def api_reprogramar_cita(request, cita_id):
         return JsonResponse({'error': err}, status=400)
 
     try:
-        hora = __import__('datetime').time.fromisoformat(hora_str)
+        import datetime
+        hora = datetime.time.fromisoformat(hora_str)
     except ValueError:
         return JsonResponse({'error': 'Formato de hora inválido.'}, status=400)
 
@@ -286,15 +333,15 @@ def api_reprogramar_cita(request, cita_id):
     cita.hora_reprogramada     = hora
     cita.motivo_reprogramacion = motivo_r
     cita.estado                = 'REPROGRAMADA'
-    cita.save(update_fields=['fecha_reprogramada', 'hora_reprogramada',
-                              'motivo_reprogramacion', 'estado', 'actualizado'])
+    cita.save(update_fields=[
+        'fecha_reprogramada', 'hora_reprogramada',
+        'motivo_reprogramacion', 'estado', 'actualizado'
+    ])
     return JsonResponse({'ok': True, 'mensaje': 'Cita reprogramada exitosamente.'})
 
 
 # ─────────────────────────────────────────────
 #  API — CANCELAR CITA
-#  Estudiante: solo PENDIENTE
-#  Orientador: PENDIENTE o APROBADA
 # ─────────────────────────────────────────────
 
 @login_required(login_url='/autenticar/login')
@@ -304,6 +351,8 @@ def api_cancelar_cita(request, cita_id):
     if not perfil or perfil.rol_id not in (2, 3):
         return JsonResponse({'error': 'No autorizado.'}, status=403)
 
+    data = _json_body(request)
+
     if perfil.rol_id == 2:
         cita = get_object_or_404(Cita, pk=cita_id, estudiante=request.user)
         if not cita.puede_cancelar_estudiante:
@@ -311,6 +360,8 @@ def api_cancelar_cita(request, cita_id):
                 {'error': 'Solo puedes cancelar citas en estado PENDIENTE.'},
                 status=400
             )
+        cita.estado = 'CANCELADA'
+        cita.save(update_fields=['estado', 'actualizado'])
     else:
         cita = get_object_or_404(Cita, pk=cita_id, orientador=request.user)
         if cita.estado not in ('PENDIENTE', 'APROBADA', 'REPROGRAMADA'):
@@ -318,14 +369,16 @@ def api_cancelar_cita(request, cita_id):
                 {'error': f'No se puede cancelar una cita en estado {cita.estado}.'},
                 status=400
             )
+        motivo_cancelacion = data.get('motivo_cancelacion', '').strip()
+        cita.estado             = 'CANCELADA'
+        cita.motivo_cancelacion = motivo_cancelacion
+        cita.save(update_fields=['estado', 'motivo_cancelacion', 'actualizado'])
 
-    cita.estado = 'CANCELADA'
-    cita.save(update_fields=['estado', 'actualizado'])
     return JsonResponse({'ok': True, 'mensaje': 'Cita cancelada.'})
 
 
 # ─────────────────────────────────────────────
-#  API — FINALIZAR CITA (solo orientador, solo APROBADA)
+#  API — FINALIZAR CITA
 # ─────────────────────────────────────────────
 
 @login_required(login_url='/autenticar/login')
@@ -369,7 +422,7 @@ def api_detalle_cita(request, cita_id):
 
 
 # ─────────────────────────────────────────────
-#  API — CITAS PENDIENTES (para modal de aprobar del orientador)
+#  API — CITAS PENDIENTES
 # ─────────────────────────────────────────────
 
 @login_required(login_url='/autenticar/login')
@@ -379,6 +432,4 @@ def api_citas_pendientes(request):
         return JsonResponse({'error': 'No autorizado.'}, status=403)
 
     citas = Cita.objects.filter(orientador=request.user, estado='PENDIENTE')
-    return JsonResponse({
-        'citas': [_cita_to_dict(c, 3) for c in citas]
-    })
+    return JsonResponse({'citas': [_cita_to_dict(c, 3) for c in citas]})

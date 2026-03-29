@@ -58,7 +58,7 @@
       {% elif rol == 3 %}
       <!-- ── INSTRUCTOR / PSICOSOCIAL ── -->
       <li data-icon="📅">
-        <a href="/orientador/gestionarCita"><span>Gestionar Citas</span></a>
+        <a href="citas"><span>Gestionar Citas</span></a>
       </li>
       <li data-icon="🎓">
         <a href="/orientador/actividades"><span>Talleres</span></a>
@@ -80,7 +80,7 @@
     <div class="header-title">
       {% if rol == 1 %}Dashboard Administrador
       {% elif rol == 2 %}Dashboard Aprendiz
-      {% elif rol == 3 %}Dashboard Instructor
+      {% elif rol == 3 %}Dashboard Orientador
       {% else %}Dashboard
       {% endif %}
     </div>
@@ -112,7 +112,7 @@
       <div class="stat-card">
         <span class="stat-icon">🧘‍♀️</span>
         <div class="stat-value" id="stat-orientadores">0</div>
-        <div class="stat-label">Instructores</div>
+        <div class="stat-label">Orientadores</div>
       </div>
     </div>
 

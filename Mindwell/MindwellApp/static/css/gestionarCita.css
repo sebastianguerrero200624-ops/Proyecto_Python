@@ -217,22 +217,12 @@ body {
   align-items: center;
   gap: 1rem;
 }
-.user-avatar {
-  width: 80px;
-  height: 40px;
-  border-radius: 20%;
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-}
 .btn-sesion {
   padding: .6rem 1.4rem;
   background: var(--error-color);
   border: none;
   border-radius: 20px;
+  text-decoration: none;
   color: white;
   cursor: pointer;
   font-weight: 600;
@@ -780,4 +770,216 @@ footer {
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
   }
+}
+
+/* ─── ADICIONES A gestionarCita.css ─────────────────────────
+   Agrega esto al FINAL de tu gestionarCita.css existente
+   ─────────────────────────────────────────────────────────── */
+
+/* ══════════════════════════════════
+   BOTÓN FINALIZAR — Morado
+══════════════════════════════════ */
+.btn-finalizar {
+  background: #EDE9FE;
+  color: #6D28D9;
+}
+[data-theme="dark"] .btn-finalizar {
+  background: #312E81;
+  color: #C4B5FD;
+}
+
+/* ══════════════════════════════════
+   ESTADO REPROGRAMADA
+══════════════════════════════════ */
+.estado-reprogramada {
+  background: #FEF3C7;
+  color: #92400E;
+}
+[data-theme="dark"] .estado-reprogramada {
+  background: #78350F;
+  color: #FDE68A;
+}
+
+/* ══════════════════════════════════
+   CHIPS DE PRIORIDAD (en tabla)
+══════════════════════════════════ */
+.chip {
+  display: inline-block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.prioridad-alta-chip  { background: #FEE2E2; color: #991B1B; }
+.prioridad-media-chip { background: #FEF9C3; color: #854D0E; }
+.prioridad-baja-chip  { background: #D1FAE5; color: #065F46; }
+
+[data-theme="dark"] .prioridad-alta-chip  { background: #7F1D1D; color: #FECACA; }
+[data-theme="dark"] .prioridad-media-chip { background: #713F12; color: #FEF3C7; }
+[data-theme="dark"] .prioridad-baja-chip  { background: #134E4A; color: #A7F3D0; }
+
+/* ══════════════════════════════════
+   INDICADOR DE PRIORIDAD (en formulario)
+══════════════════════════════════ */
+.prioridad-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  border-left: 4px solid transparent;
+  transition: all 0.3s ease;
+}
+.prioridad-badge strong { font-size: 0.95rem; }
+.prioridad-badge span   { font-size: 0.82rem; opacity: 0.85; }
+
+.prioridad-alta  { background: #FEE2E2; border-color: #EF4444; color: #991B1B; }
+.prioridad-media { background: #FEF9C3; border-color: #F59E0B; color: #854D0E; }
+.prioridad-baja  { background: #D1FAE5; border-color: #10B981; color: #065F46; }
+
+[data-theme="dark"] .prioridad-alta  { background: #7F1D1D; color: #FECACA; border-color: #F87171; }
+[data-theme="dark"] .prioridad-media { background: #713F12; color: #FEF3C7; border-color: #FBBF24; }
+[data-theme="dark"] .prioridad-baja  { background: #134E4A; color: #A7F3D0; border-color: #34D399; }
+
+/* ══════════════════════════════════
+   RELOJ ESTÉTICO
+══════════════════════════════════ */
+.reloj-container {
+  border: 2px solid var(--border-color);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+.reloj-container:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(0, 150, 108, 0.1);
+}
+
+.reloj-display {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  cursor: default;
+}
+.reloj-display.selected {
+  background: linear-gradient(135deg, rgba(0,150,108,0.08), rgba(0,195,137,0.05));
+}
+.reloj-icon { font-size: 1.2rem; }
+.reloj-hora-seleccionada {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  transition: color 0.3s;
+}
+.reloj-display.selected .reloj-hora-seleccionada {
+  color: var(--primary-color);
+}
+
+.reloj-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 6px;
+  padding: 12px;
+  background: var(--bg-primary);
+  max-height: 200px;
+  overflow-y: auto;
+}
+.reloj-grid::-webkit-scrollbar { width: 6px; }
+.reloj-grid::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.reloj-slot {
+  padding: 0.5rem 0.25rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+}
+.reloj-slot:hover {
+  border-color: var(--primary-color);
+  background: rgba(0,150,108,0.07);
+  transform: translateY(-1px);
+}
+.reloj-slot.active {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 3px 10px rgba(0,150,108,0.35);
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .reloj-slot {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+[data-theme="dark"] .reloj-slot:hover {
+  background: rgba(0,195,137,0.1);
+}
+
+/* ══════════════════════════════════
+   DETALLE DE CITA (modal ver)
+══════════════════════════════════ */
+.detalle-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+.detalle-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.95rem;
+}
+.detalle-row:last-child { border-bottom: none; }
+
+.detalle-label {
+  min-width: 170px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.detalle-motivo-full {
+  align-items: flex-start;
+}
+.detalle-motivo-full span:last-child {
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Filas destacadas para cancelación/reprogramación */
+.detalle-highlight {
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  border-bottom: none !important;
+}
+.detalle-highlight.repro   { background: #FEF9C3; }
+.detalle-highlight.cancel  { background: #FEE2E2; }
+[data-theme="dark"] .detalle-highlight.repro  { background: #713F12; }
+[data-theme="dark"] .detalle-highlight.cancel { background: #7F1D1D; }
+
+/* Al final de gestionarCita.css */
+.fila-prioridad-alta {
+  background: rgba(239, 68, 68, 0.06) !important;
+  border-left: 3px solid #EF4444;
+}
+[data-theme="dark"] .fila-prioridad-alta {
+  background: rgba(239, 68, 68, 0.12) !important;
 }

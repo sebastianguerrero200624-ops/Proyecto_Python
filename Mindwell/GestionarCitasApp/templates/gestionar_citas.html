@@ -4,9 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>
-    {% if rol == 2 %}Mis Citas{% else %}Gestión de Citas{% endif %} — MindWell
-  </title>
+  <title>{% if rol == 2 %}Mis Citas{% else %}Gestión de Citas{% endif %} — MindWell</title>
   <link rel="stylesheet" href="{% static 'css/gestionarCita.css' %}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,9 +16,7 @@
 </head>
 <body>
 
-  <!-- ══════════════════════════════════════
-       SIDEBAR — dinámico por rol
-  ══════════════════════════════════════ -->
+  <!-- SIDEBAR -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <img src="{% static 'img/logo.png' %}" alt="Logo MindWell" class="logo-img" />
@@ -28,9 +24,7 @@
     </div>
     <div class="toggle-btn" onclick="toggleSidebar()">▶</div>
     <ul>
-      <li data-icon="🏠">
-        <a href="{% url 'dashboard' %}"><span>Inicio</span></a>
-      </li>
+      <li data-icon="🏠"><a href="{% url 'dashboard' %}"><span>Inicio</span></a></li>
       <li data-icon="📅" class="active">
         <a href="{% url 'gestionar_citas' %}">
           <span>{% if rol == 2 %}Mis Citas{% else %}Gestionar Citas{% endif %}</span>
@@ -48,9 +42,7 @@
     </ul>
   </div>
 
-  <!-- ══════════════════════════════════════
-       HEADER
-  ══════════════════════════════════════ -->
+  <!-- HEADER -->
   <header class="header">
     <div class="header-title">
       {% if rol == 2 %}Mis Citas{% else %}Gestión de Citas — Orientador{% endif %}
@@ -58,16 +50,14 @@
     <div class="user-info">
       <div class="user-avatar">{{ nombres }} {{ apellidos }}</div>
       <span class="rol-badge">{{ rol_label }}</span>
-      <a href="{% url 'cerrar_sesion' %}" class="btn-sesion">Cerrar sesión</a>
+    <a href="{% url 'cerrar_sesion' %}" class="btn-sesion" id="btn-sesion">Cerrar sesión</a>
     </div>
   </header>
 
-  <!-- ══════════════════════════════════════
-       MAIN CONTENT
-  ══════════════════════════════════════ -->
+  <!-- MAIN -->
   <main class="main-content">
 
-    <!-- ── Acciones principales ── -->
+    <!-- Acciones principales -->
     <section class="new-appointment-card">
       {% if rol == 2 %}
         <h2>📅 Solicitar Nueva Cita</h2>
@@ -84,7 +74,7 @@
       {% endif %}
     </section>
 
-    <!-- ── Filtros ── -->
+    <!-- Filtros -->
     <section class="filters-section">
       <h3>🔍 Filtrar Historial</h3>
       <div class="filters-container">
@@ -105,7 +95,7 @@
       </div>
     </section>
 
-    <!-- ── Historial de citas ── -->
+    <!-- Tabla de citas -->
     <section class="appointments-section">
       <h2 class="section-title">
         🗂 {% if rol == 2 %}Mis Solicitudes{% else %}Historial de Citas{% endif %}
@@ -120,11 +110,12 @@
               <th>Hora</th>
               <th>Motivo</th>
               <th>Estado</th>
+              <th>Prioridad</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody id="tabla-citas-body">
-            <tr><td colspan="{% if rol == 2 %}6{% else %}6{% endif %}" class="no-citas-message">Cargando...</td></tr>
+            <tr><td colspan="7" class="no-citas-message">Cargando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -134,9 +125,7 @@
 
   <footer><p>&copy; 2025 Team Scrum 2 — SENA</p></footer>
 
-  <!-- ══════════════════════════════════════
-       MODALES — ESTUDIANTE (rol 2)
-  ══════════════════════════════════════ -->
+  <!-- ══ MODALES — ESTUDIANTE (rol 2) ══ -->
   {% if rol == 2 %}
 
   <!-- Modal: Nueva cita -->
@@ -166,16 +155,20 @@
         </div>
 
         <div class="form-group">
-          <label for="hora">Hora <span class="required">*</span></label>
-          <select id="hora" required>
-            <option value="">Selecciona una hora</option>
-          </select>
+          <label>Hora <span class="required">*</span></label>
+          <!-- Input hidden que guarda el valor real -->
+          <input type="hidden" id="hora-hidden">
+          <!-- Contenedor del reloj estético -->
+          <div id="reloj-hora-crear"></div>
         </div>
 
         <div class="form-group">
           <label for="motivo">Motivo <span class="required">*</span></label>
-          <textarea id="motivo" rows="4" maxlength="255" placeholder="Describe brevemente el motivo (ej: ansiedad, estrés, orientación vocacional...)"></textarea>
+          <textarea id="motivo" rows="4" maxlength="255"
+            placeholder="Describe el motivo de tu cita (ej: ansiedad, estrés, orientación vocacional...)"></textarea>
           <small class="hint"><span id="motivo-count">0</span>/255 caracteres</small>
+          <!-- Indicador de prioridad en tiempo real -->
+          <div id="indicador-prioridad"></div>
         </div>
 
         <div class="form-actions">
@@ -201,23 +194,21 @@
 
   {% endif %}
 
-  <!-- ══════════════════════════════════════
-       MODALES — ORIENTADOR (rol 3)
-  ══════════════════════════════════════ -->
+  <!-- ══ MODALES — ORIENTADOR (rol 3) ══ -->
   {% if rol == 3 %}
 
-  <!-- Modal: Aprobar citas pendientes -->
+  <!-- Modal: Aprobar -->
   <div class="modal" id="modal-aprobar">
-    <div class="modal-content crear-modal" style="max-width:900px;">
+    <div class="modal-content crear-modal" style="max-width:950px;">
       <span class="close" onclick="closeModal('modal-aprobar')">&times;</span>
       <h2 class="modal-title">✓ Aprobar Citas Pendientes</h2>
       <div class="table-container">
         <table class="styled-table">
           <thead>
-            <tr><th>Estudiante</th><th>Fecha</th><th>Hora</th><th>Motivo</th><th>Acción</th></tr>
+            <tr><th>Estudiante</th><th>Fecha</th><th>Hora</th><th>Motivo</th><th>Prioridad</th><th>Acción</th></tr>
           </thead>
           <tbody id="tabla-pendientes-body">
-            <tr><td colspan="5" class="no-citas-message">Cargando...</td></tr>
+            <tr><td colspan="6" class="no-citas-message">Cargando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -227,7 +218,7 @@
     </div>
   </div>
 
-  <!-- Modal: Reprogramar cita (orientador) -->
+  <!-- Modal: Reprogramar -->
   <div class="modal" id="modal-reprogramar-ori">
     <div class="modal-content crear-modal">
       <span class="close" onclick="closeModal('modal-reprogramar-ori')">&times;</span>
@@ -246,14 +237,14 @@
           <small class="hint">Mínimo: mañana. Máximo: 2 meses.</small>
         </div>
         <div class="form-group">
-          <label for="hora-repro">Nueva Hora <span class="required">*</span></label>
-          <select id="hora-repro" required>
-            <option value="">Selecciona una hora</option>
-          </select>
+          <label>Nueva Hora <span class="required">*</span></label>
+          <input type="hidden" id="hora-repro-hidden">
+          <div id="reloj-hora-repro"></div>
         </div>
         <div class="form-group">
-          <label for="motivo-repro">Motivo de reprogramación</label>
-          <textarea id="motivo-repro" rows="2" maxlength="255" placeholder="Opcional..."></textarea>
+          <label for="motivo-repro">Motivo de reprogramación <span class="required">*</span></label>
+          <textarea id="motivo-repro" rows="2" maxlength="255"
+            placeholder="Explica el motivo de la reprogramación..."></textarea>
         </div>
         <div class="form-actions">
           <button type="button" class="btn-close" onclick="closeModal('modal-reprogramar-ori')">Cancelar</button>
@@ -263,7 +254,7 @@
     </div>
   </div>
 
-  <!-- Modal: Cancelar cita (orientador) -->
+  <!-- Modal: Cancelar (orientador) -->
   <div class="modal" id="modal-cancelar-ori">
     <div class="modal-content crear-modal">
       <span class="close" onclick="closeModal('modal-cancelar-ori')">&times;</span>
@@ -271,14 +262,15 @@
       <form id="formCancelarOri" class="crear-form">
         {% csrf_token %}
         <div class="form-group">
-          <label>Cita a cancelar</label>
+          <label>Cita a cancelar (Para cancelar la cita, primero se debe aprobar)</label>
           <select id="cita-cancelar-select" required>
             <option value="">Selecciona una cita</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="motivo-cancelacion">Motivo (opcional)</label>
-          <textarea id="motivo-cancelacion" rows="3" placeholder="Describe el motivo..."></textarea>
+          <label for="motivo-cancelacion">Motivo de cancelación <span class="required">*</span></label>
+          <textarea id="motivo-cancelacion" rows="3"
+            placeholder="Explica el motivo de la cancelación para informar al estudiante..."></textarea>
         </div>
         <div class="form-actions">
           <button type="button" class="btn-close" onclick="closeModal('modal-cancelar-ori')">Cancelar</button>
@@ -288,7 +280,7 @@
     </div>
   </div>
 
-  <!-- Modal: Finalizar cita -->
+  <!-- Modal: Finalizar -->
   <div class="modal" id="modal-finalizar">
     <div class="modal-content">
       <span class="close" onclick="closeModal('modal-finalizar')">&times;</span>
@@ -303,13 +295,15 @@
 
   {% endif %}
 
-  <!-- Modal: Ver detalle (ambos roles) -->
+  <!-- Modal: Ver detalle -->
   <div class="modal" id="modal-ver">
-    <div class="modal-content">
+    <div class="modal-content crear-modal">
       <span class="close" onclick="closeModal('modal-ver')">&times;</span>
       <h2 class="modal-title">👁 Detalles de la Cita</h2>
       <div id="detalle-cita-content"></div>
-      <button class="btn-close" onclick="closeModal('modal-ver')">Cerrar</button>
+      <div class="form-actions" style="margin-top:1.5rem;">
+        <button class="btn-close" onclick="closeModal('modal-ver')">Cerrar</button>
+      </div>
     </div>
   </div>
 
@@ -318,13 +312,13 @@
     <span id="theme-icon">🌙</span>
   </button>
 
-  <!-- Pasar datos de Django al JS -->
   <script>
     window.MW_ROL      = {{ rol }};
     window.MW_CSRF     = '{{ csrf_token }}';
     window.MW_BASE_URL = '';
   </script>
-  <script src="{% static 'js/cita_unificado.js' %}"></script>
+    <script src="{% static 'js/dashboard.js' %}"></script>
+    <script src="{% static 'js/cita.js' %}"></script>
 
 </body>
 </html>

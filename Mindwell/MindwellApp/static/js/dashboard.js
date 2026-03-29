@@ -78,7 +78,7 @@ class DashboardManager {
                 transition: opacity 0.3s ease; cursor: pointer;
             `;
 
-            const tipoLabel = { 1: 'Administrador', 2: 'Aprendiz', 3: 'Instructor' }[this.rolId] || 'Usuario';
+            const tipoLabel = { 1: 'Administrador', 2: 'Aprendiz', 3: 'Orientador' }[this.rolId] || 'Usuario';
             const emoji     = this.rolId === 3 ? '🧘‍♀️' : this.rolId === 1 ? '🛡️' : '🎓';
 
             const card = document.createElement('div');

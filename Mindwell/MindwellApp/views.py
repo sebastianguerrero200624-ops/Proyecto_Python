@@ -26,7 +26,7 @@ def dashboard(request):
     except Perfil.DoesNotExist:
         rol = 1  # superusuario sin perfil → trata como admin
 
-    ROL_LABEL = {1: 'Administrador', 2: 'Aprendiz', 3: 'Instructor'}
+    ROL_LABEL = {1: 'Administrador', 2: 'Aprendiz', 3: 'Orientador'}
 
     contexto = {
         'nombres':   request.user.first_name,

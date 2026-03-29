@@ -6,7 +6,7 @@ class Perfil(models.Model):
     ROL_CHOICES = [
         (1, 'Administrador'),
         (2, 'Aprendiz'),
-        (3, 'Instructor'),
+        (3, 'Orientador'),
     ]
 
     user       = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
