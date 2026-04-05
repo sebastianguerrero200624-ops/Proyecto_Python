@@ -24,12 +24,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    # Apps propias
     'AutenticarApp',
     'GestionarCitasApp',
     'MindwellApp',
     'ActividadApp',
+    'ResultadoApp'
 ]
 
 

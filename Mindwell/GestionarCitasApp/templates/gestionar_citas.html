@@ -32,10 +32,10 @@
       </li>
       {% if rol == 2 %}
       <li data-icon="🎓"><a href="{% url 'actividades' %}"><span>Talleres</span></a></li>
-      <li data-icon="🧘"><a href="#"><span>Bienestar</span></a></li>
+      <li data-icon="📈"><a href="{% url 'resultados' %}"><span>resultados</span></a></li>
       {% else %}
       <li data-icon="🎓"><a href="{% url 'actividades' %}"><span>Talleres</span></a></li>
-      <li data-icon="📈"><a href="#"><span>Resultados</span></a></li>
+      <li data-icon="📈"><a href="{% url 'resultados' %}"><span>Resultados</span></a></li>
       {% endif %}
     </ul>
   </div>
@@ -121,7 +121,6 @@
 
   </main>
 
-  <footer><p>&copy; 2025 Team Scrum 2 — SENA</p></footer>
 
   <!-- ══ MODALES — ESTUDIANTE (rol 2) ══ -->
   {% if rol == 2 %}

@@ -48,11 +48,8 @@
       <li data-icon="🔍">
         <a href="actividades"><span>Consultar Proceso</span></a>
       </li>
-      <li data-icon="🎓">
-        <a href="/aprendiz/talleres"><span>Talleres</span></a>
-      </li>
       <li data-icon="🧘">
-        <a href="/aprendiz/bienestar"><span>Bienestar</span></a>
+        <a href="resultados"><span>Mis resultados</span></a>
       </li>
 
       {% elif rol == 3 %}
@@ -64,10 +61,7 @@
         <a href="actividades"><span>Talleres</span></a>
       </li>
       <li data-icon="📈">
-        <a href="/orientador/resultados"><span>Resultados</span></a>
-      </li>
-      <li data-icon="🧘‍♀️">
-        <a href="/orientador/bienestar"><span>Ejercicios</span></a>
+        <a href="resultados"><span>Resultados</span></a>
       </li>
       {% endif %}
     </ul>
@@ -125,16 +119,14 @@
       <a href="/admin/configuracion" class="action-btn">⚙️ <span>Configuración</span></a>
 
       {% elif rol == 2 %}
-      <a href="/aprendiz/citas" class="action-btn">📅 <span>Nueva Cita</span></a>
-      <a href="/aprendiz/proceso" class="action-btn">🔍 <span>Consultar Proceso</span></a>
-      <a href="/aprendiz/talleres" class="action-btn">🎓 <span>Talleres</span></a>
-      <a href="/aprendiz/bienestar" class="action-btn">🧘 <span>Bienestar</span></a>
+      <a href="citas" class="action-btn">📅 <span>Mis Citas</span></a>
+      <a href="actividades" class="action-btn">🔍 <span>Mis Actividades</span></a>
+      <a href="resultados" class="action-btn">🧘‍♀️ <span>Mis Resultados</span></a>
 
       {% elif rol == 3 %}
-      <a href="/orientador/gestionarCita" class="action-btn">📅 <span>Nueva Cita</span></a>
-      <a href="/orientador/resultados" class="action-btn">🔍 <span>Ver Diagnóstico</span></a>
-      <a href="/orientador/actividades" class="action-btn">🎓 <span>Talleres</span></a>
-      <a href="/orientador/bienestar" class="action-btn">🧘‍♀️ <span>Ejercicios</span></a>
+      <a href="citas" class="action-btn">📅 <span>Gestionar Citas</span></a>
+      <a href="actividades" class="action-btn">🔍 <span>Gestionar Actividades</span></a>
+      <a href="resultados" class="action-btn">🧘‍♀️ <span>Resultados</span></a>
       {% endif %}
 
     </div>
@@ -156,7 +148,6 @@
 
   <!-- Footer -->
   <footer>
-    <p>&copy; 2025 Team Scrum 2 — SENA</p>
   </footer>
 
   <!-- Botón de tema claro/oscuro -->

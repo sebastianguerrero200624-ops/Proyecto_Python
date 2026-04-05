@@ -1,0 +1,307 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resultados — MindWell</title>
+  <link rel="stylesheet" href="{% static 'css/resultados.css' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="{% static 'img/logo.png' %}" alt="MindWell" class="logo-img">
+      <h1 class="sidebar-title">MINDWELL</h1>
+    </div>
+    <div class="toggle-btn" onclick="toggleSidebar()">▶</div>
+    <ul>
+      <li data-icon="🏠"><a href="{% url 'dashboard' %}"><span>Inicio</span></a></li>
+      <li data-icon="📅"><a href="{% url 'gestionar_citas' %}">
+        <span>{% if rol == 2 %}Mis Citas{% else %}Gestionar Citas{% endif %}</span></a></li>
+      <li data-icon="🎓"><a href="{% url 'actividades' %}"><span>Talleres</span></a></li>
+      <li data-icon="📈" class="active"><a href="{% url 'resultados' %}"><span>Resultados</span></a></li>
+    </ul>
+  </div>
+
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header class="header">
+    <div class="header-title">
+      {% if rol == 2 %}Mis Resultados{% else %}Gestión de Resultados{% endif %}
+    </div>
+    <div class="user-info">
+      {% if rol == 3 %}
+        <button class="btn-accion" onclick="abrirModalCrear()">➕ Registrar Resultado</button>
+        <select id="filtro-aprendiz" class="select-filtro">
+          <option value="">Todos los aprendices</option>
+        </select>
+      {% endif %}
+      {% if rol == 2 %}
+        <a href="{% url 'generar_pdf_proceso' request.user.pk %}" class="btn-accion" target="_blank">
+          📄 Descargar mi Proceso
+        </a>
+      {% endif %}
+      <div class="user-avatar">{{ nombres }} {{ apellidos }}</div>
+      <span class="rol-badge">{{ rol_label }}</span>
+      <a href="{% url 'cerrar_sesion' %}" class="btn-sesion" id="btn-sesion">Cerrar sesión</a>
+    </div>
+  </header>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main class="main-content">
+
+    <!-- Banner informativo -->
+    <div class="info-banner">
+      <span class="info-icon">ℹ️</span>
+      <div>
+        <h3>{% if rol == 2 %}Tu progreso de bienestar{% else %}Panel de resultados{% endif %}</h3>
+        <p>
+          {% if rol == 2 %}
+            Visualiza la evolución de tus citas, niveles de estrés y las evaluaciones de tu orientador.
+          {% else %}
+            Registra y consulta las evaluaciones de tus aprendices. Cada cita finalizada puede tener un resultado.
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <!-- Stats rápidas -->
+    <div id="estadisticas-rapidas" class="stats-grid"></div>
+
+    <!-- Grid de gráficas -->
+    <div class="charts-grid">
+
+      <div class="chart-container large">
+        <div class="chart-wrapper"><canvas id="chartCitasMes"></canvas></div>
+        <p class="chart-desc">Evolución de citas en los últimos 12 meses</p>
+      </div>
+
+      <div class="chart-container medium">
+        <div class="chart-wrapper"><canvas id="chartNivelEstres"></canvas></div>
+        <p class="chart-desc">Distribución de niveles de estrés evaluados</p>
+      </div>
+
+      <div class="chart-container medium">
+        <div class="chart-wrapper"><canvas id="chartMotivos"></canvas></div>
+        <p class="chart-desc">Categorización de motivos de consulta</p>
+      </div>
+
+      <div class="chart-container medium">
+        <div class="chart-wrapper"><canvas id="chartHorarios"></canvas></div>
+        <p class="chart-desc">Horarios en que más se agendan citas</p>
+      </div>
+
+      <div class="chart-container medium">
+        <div class="chart-wrapper"><canvas id="chartDiasSemana"></canvas></div>
+        <p class="chart-desc">Días de la semana con más citas agendadas</p>
+      </div>
+
+    </div>
+
+    <!-- Tabla de evaluaciones -->
+    <div class="recent-evaluations">
+      <div class="section-header">
+        <h3>📋 {% if rol == 2 %}Mis Evaluaciones{% else %}Evaluaciones Registradas{% endif %}</h3>
+        {% if rol == 3 %}
+        <div class="table-actions">
+          <input type="text" id="buscar-evaluacion" placeholder="Buscar aprendiz..." class="input-buscar">
+        </div>
+        {% endif %}
+      </div>
+      <div class="table-container">
+        <table class="evaluations-table" id="tabla-evaluaciones">
+          <thead>
+            <tr>
+              <th>Fecha Eval.</th>
+              {% if rol == 3 %}<th>Aprendiz</th>{% endif %}
+              {% if rol == 2 %}<th>Orientador</th>{% endif %}
+              <th>Fecha Cita</th>
+              <th>Estrés</th>
+              <th>Ansiedad</th>
+              <th>Nivel</th>
+              <th>Avance</th>
+              {% if rol == 3 %}<th>Acciones</th>{% endif %}
+            </tr>
+          </thead>
+          <tbody id="tbody-evaluaciones">
+            <tr><td colspan="8" class="loading-cell">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Card motivación (aprendiz) -->
+    {% if rol == 2 %}
+    <div class="motivation-card">
+      <div class="motivation-icon">💪</div>
+      <div>
+        <h4>¡Sigue adelante!</h4>
+        <p>El seguimiento de tu bienestar emocional es el primer paso hacia una vida más equilibrada. Continúa asistiendo a tus citas y trabajando en tu desarrollo personal.</p>
+      </div>
+    </div>
+    {% endif %}
+
+  </main>
+
+
+
+  <!-- ═══════════ MODAL CREAR RESULTADO (orientador) ═══════════ -->
+  {% if rol == 3 %}
+  <div class="modal" id="modal-crear">
+    <div class="modal-content crear-modal">
+      <span class="close" onclick="closeModal('modal-crear')">&times;</span>
+      <h2 class="modal-title">📝 Registrar Resultado de Cita</h2>
+      <form id="formCrear" class="crear-form">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label>Cita Finalizada <span class="required">*</span></label>
+          <select id="crear-cita" required>
+            <option value="">Selecciona una cita...</option>
+          </select>
+          <small class="hint">Solo citas finalizadas sin resultado registrado.</small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nivel de Estrés (0–100) <span class="required">*</span></label>
+            <input type="range" id="crear-estres" min="0" max="100" value="0"
+                   oninput="document.getElementById('val-estres').textContent=this.value">
+            <div class="range-display">
+              <span>0</span>
+              <strong id="val-estres">0</strong>
+              <span>100</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Nivel de Ansiedad (0–100) <span class="required">*</span></label>
+            <input type="range" id="crear-ansiedad" min="0" max="100" value="0"
+                   oninput="document.getElementById('val-ansiedad').textContent=this.value">
+            <div class="range-display">
+              <span>0</span>
+              <strong id="val-ansiedad">0</strong>
+              <span>100</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Indicador de nivel automático -->
+        <div id="nivel-preview" class="nivel-preview nivel-bajo">
+          Nivel calculado: <strong id="nivel-texto">BAJO</strong>
+        </div>
+
+        <div class="form-group">
+          <label>Avance Observado</label>
+          <textarea id="crear-avance" rows="3" maxlength="1000"
+                    placeholder="Describe el progreso del aprendiz en esta cita..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Recomendaciones</label>
+          <textarea id="crear-reco" rows="3" maxlength="1000"
+                    placeholder="Indicaciones para el aprendiz..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Observaciones internas</label>
+          <textarea id="crear-obs" rows="2" maxlength="500"
+                    placeholder="Notas solo visibles para el orientador..."></textarea>
+        </div>
+
+        <div class="form-checks">
+          <label class="check-label">
+            <input type="checkbox" id="crear-asistio" checked>
+            <span>El aprendiz asistió a la cita</span>
+          </label>
+          <label class="check-label">
+            <input type="checkbox" id="crear-seguimiento">
+            <span>Requiere seguimiento especial</span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-close" onclick="closeModal('modal-crear')">Cancelar</button>
+          <button type="submit" class="btn-confirm">Guardar Resultado</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Editar Resultado -->
+  <div class="modal" id="modal-editar">
+    <div class="modal-content crear-modal">
+      <span class="close" onclick="closeModal('modal-editar')">&times;</span>
+      <h2 class="modal-title">✏️ Editar Resultado</h2>
+      <form id="formEditar" class="crear-form">
+        {% csrf_token %}
+        <input type="hidden" id="editar-id">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nivel de Estrés (0–100)</label>
+            <input type="range" id="editar-estres" min="0" max="100" value="0"
+                   oninput="document.getElementById('val-estres-e').textContent=this.value">
+            <div class="range-display">
+              <span>0</span><strong id="val-estres-e">0</strong><span>100</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Nivel de Ansiedad (0–100)</label>
+            <input type="range" id="editar-ansiedad" min="0" max="100" value="0"
+                   oninput="document.getElementById('val-ansiedad-e').textContent=this.value">
+            <div class="range-display">
+              <span>0</span><strong id="val-ansiedad-e">0</strong><span>100</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Avance Observado</label>
+          <textarea id="editar-avance" rows="3" maxlength="1000"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Recomendaciones</label>
+          <textarea id="editar-reco" rows="3" maxlength="1000"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Observaciones internas</label>
+          <textarea id="editar-obs" rows="2" maxlength="500"></textarea>
+        </div>
+        <div class="form-checks">
+          <label class="check-label">
+            <input type="checkbox" id="editar-asistio">
+            <span>Asistió a la cita</span>
+          </label>
+          <label class="check-label">
+            <input type="checkbox" id="editar-seguimiento">
+            <span>Requiere seguimiento especial</span>
+          </label>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-close" onclick="closeModal('modal-editar')">Cancelar</button>
+          <button type="submit" class="btn-confirm">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  {% endif %}{# fin rol == 3 #}
+
+  <button class="theme-toggle" id="theme-toggle"><span id="theme-icon">🌙</span></button>
+
+  <script>
+    window.MW_ROL  = {{ rol }};
+    window.MW_CSRF = '{{ csrf_token }}';
+    window.MW_USER_ID = {{ request.user.pk }};
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="{% static 'js/resultados.js' %}"></script>
+
+</body>
+</html>

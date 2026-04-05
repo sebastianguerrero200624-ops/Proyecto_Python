@@ -25,6 +25,7 @@ urlpatterns = [
     path('autenticar/',include('AutenticarApp.urls')),
     path('',include('GestionarCitasApp.urls')),
     path('',include('ActividadApp.urls')),
+    path('',include('ResultadoApp.urls')),
 ]
 
 

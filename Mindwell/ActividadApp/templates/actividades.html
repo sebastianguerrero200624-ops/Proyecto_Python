@@ -43,8 +43,7 @@
     <li><a href="#"><span class="nav-icon">🔍</span><span class="nav-label">Consultar Proceso</span></a></li>
     <li><a href="#"><span class="nav-icon">🧘</span><span class="nav-label">Bienestar</span></a></li>
     {% else %}
-    <li><a href="#"><span class="nav-icon">📈</span><span class="nav-label">Resultados</span></a></li>
-    <li><a href="#"><span class="nav-icon">🧘‍♀️</span><span class="nav-label">Ejercicios</span></a></li>
+    <li><a href="{% url 'resultados' %}"><span class="nav-icon">📈</span><span class="nav-label">Resultados</span></a></li>
     {% endif %}
   </ul>
 </div>
@@ -107,7 +106,6 @@
   </div>
 </main>
 
-<footer><p>&copy; 2025 Team Scrum 2 — SENA · MindWell</p></footer>
 
 <!-- ══════════════════════════════════════════
      MODALES COMUNES
