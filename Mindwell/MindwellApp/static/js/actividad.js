@@ -866,6 +866,30 @@ function setupDelegacion() {
   });
 }
 
+function configurarCerrarSesion() {
+  const btn = document.getElementById('btn-sesion');
+  if (!btn) return;
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    Swal.fire({
+      title: '¿Cerrar sesión?',
+      text: 'Vas a salir de tu cuenta',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#00966C',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = btn.href;
+      }
+    });
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -873,6 +897,7 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarAsignadas();
   cargarRecursos();
   setupDelegacion();
+  configurarCerrarSesion();
 
   // Filtros en tiempo real (solo aprendiz)
   if (ROL === 2) {
