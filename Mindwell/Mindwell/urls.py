@@ -24,6 +24,8 @@ urlpatterns = [
     path('',include('MindwellApp.urls')),      
     path('autenticar/',include('AutenticarApp.urls')),
     path('',include('GestionarCitasApp.urls')),
+    path('',include('ActividadApp.urls')),
 ]
+
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,368 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Actividades — MindWell</title>
+  <link rel="stylesheet" href="{% static 'css/actividades.css' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ════════════════════ TOAST CONTAINER ════════════════════ -->
+<div id="toast-container"></div>
+
+<!-- ════════════════════ SIDEBAR ════════════════════ -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <img src="{% static 'img/logo.png' %}" alt="Logo MindWell" class="logo-img" />
+    <h1 class="sidebar-title">MINDWELL</h1>
+  </div>
+  <div class="toggle-btn" onclick="toggleSidebar()" title="Expandir/Colapsar">▶</div>
+  <ul>
+    <li data-icon="🏠">
+      <a href="{% url 'dashboard' %}">
+        <span class="nav-icon">🏠</span><span class="nav-label">Inicio</span>
+      </a>
+    </li>
+    <li data-icon="📅">
+      <a href="{% url 'gestionar_citas' %}">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">{% if rol == 2 %}Mis Citas{% else %}Gestionar Citas{% endif %}</span>
+      </a>
+    </li>
+    <li data-icon="🎓" class="active">
+      <a href="{% url 'actividades' %}">
+        <span class="nav-icon">🎓</span><span class="nav-label">Talleres</span>
+      </a>
+    </li>
+    {% if rol == 2 %}
+    <li><a href="#"><span class="nav-icon">🔍</span><span class="nav-label">Consultar Proceso</span></a></li>
+    <li><a href="#"><span class="nav-icon">🧘</span><span class="nav-label">Bienestar</span></a></li>
+    {% else %}
+    <li><a href="#"><span class="nav-icon">📈</span><span class="nav-label">Resultados</span></a></li>
+    <li><a href="#"><span class="nav-icon">🧘‍♀️</span><span class="nav-label">Ejercicios</span></a></li>
+    {% endif %}
+  </ul>
+</div>
+
+<!-- ════════════════════ HEADER ════════════════════ -->
+<header class="header">
+  <div class="header-title">Actividades y Recursos</div>
+  <div class="user-info">
+    <div class="header-actions">
+      {% if rol == 3 %}
+      <button class="btn-accion" onclick="openModal('modal-crear-recurso')">➕ Recurso</button>
+      <button class="btn-accion" onclick="openModal('modal-asignar')">📋 Asignar</button>
+      {% endif %}
+    </div>
+    <div class="user-avatar">{{ nombres }} {{ apellidos }}</div>
+    <span class="rol-badge">{{ rol_label }}</span>
+    <a href="{% url 'cerrar_sesion' %}" class="btn-sesion">Salir</a>
+  </div>
+</header>
+
+<!-- ════════════════════ MAIN ════════════════════ -->
+<main class="main-content">
+
+  <!-- Filtros (solo aprendiz) -->
+  {% if rol == 2 %}
+  <div class="filtro-box">
+    <input type="text" id="filtroTexto" placeholder="🔍 Buscar actividades o recursos...">
+    <select id="filtroEstado">
+      <option value="">Todos los estados</option>
+      <option value="Pendiente">⏳ Pendiente</option>
+      <option value="Completada">✅ Completada</option>
+    </select>
+  </div>
+  {% endif %}
+
+  <div class="split-container">
+
+    <!-- Columna izquierda: Actividades asignadas -->
+    <div class="column">
+      <div class="column-header">
+        <h2>📘 {% if rol == 2 %}Tus Actividades{% else %}Actividades Asignadas{% endif %}</h2>
+        <span class="column-count" id="countAsignadas">0</span>
+      </div>
+      <div id="contenedorAsignadas">
+        <p style="opacity:.6;font-size:13px">Cargando...</p>
+      </div>
+    </div>
+
+    <!-- Columna derecha: Recursos generales -->
+    <div class="column">
+      <div class="column-header">
+        <h2>🧘 Recursos de Autoayuda</h2>
+        <span class="column-count" id="countRecursos">0</span>
+      </div>
+      <div id="contenedorRecursos">
+        <p style="opacity:.6;font-size:13px">Cargando...</p>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer><p>&copy; 2025 Team Scrum 2 — SENA · MindWell</p></footer>
+
+<!-- ══════════════════════════════════════════
+     MODALES COMUNES
+══════════════════════════════════════════ -->
+
+<!-- Modal: Ver detalle genérico -->
+<div class="modal" id="modal-ver">
+  <div class="modal-content" style="max-width:580px;text-align:left">
+    <h2 class="modal-title" id="verTitulo"></h2>
+    <div id="verPreviewWrap" style="display:none;margin:12px 0;border-radius:10px;overflow:hidden;border:1px solid var(--border-color)"></div>
+    <p class="modal-text" id="verDesc" style="text-align:left;margin-bottom:10px"></p>
+    <a id="verUrl" href="#" target="_blank" rel="noopener" class="ver-url-link" style="display:none">
+      🔗 Abrir enlace
+    </a>
+    <div class="modal-actions" style="margin-top:20px;justify-content:flex-end">
+      <button class="btn-close" onclick="closeModal('modal-ver')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirmar completar (aprendiz) -->
+<div class="modal" id="modal-confirmar-completar">
+  <div class="modal-content">
+    <h2 class="modal-title">✅ Completar actividad</h2>
+    <p class="modal-text">¿Deseas marcar esta actividad como completada? Esta acción no se puede revertir.</p>
+    <div class="modal-actions">
+      <button class="btn-close" onclick="closeModal('modal-confirmar-completar')">Cancelar</button>
+      <button class="btn-confirm" onclick="ejecutarCompletar()">Sí, completar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODALES ORIENTADOR
+══════════════════════════════════════════ -->
+{% if rol == 3 %}
+
+<!-- Modal: Crear Recurso -->
+<div class="modal" id="modal-crear-recurso">
+  <div class="modal-content crear-modal">
+    <button class="close" onclick="closeModal('modal-crear-recurso')" type="button">&times;</button>
+    <h2 class="modal-title">➕ Nuevo Recurso</h2>
+    <form id="formCrearRecurso" class="crear-form" novalidate>
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="recurso-titulo">Título <span class="required">*</span></label>
+        <input type="text" id="recurso-titulo" maxlength="150" placeholder="Ej: Meditación guiada">
+        <span class="field-error" id="err-recurso-titulo"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="recurso-descripcion">Descripción</label>
+        <textarea id="recurso-descripcion" rows="3" maxlength="400"
+          placeholder="Breve descripción del recurso..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="recurso-url">URL del recurso</label>
+        <input type="url" id="recurso-url" maxlength="300"
+          placeholder="https://youtube.com/... o https://...">
+        <span class="input-hint">Soporta: YouTube (miniatura automática), PDF, imágenes y enlaces.</span>
+        <span class="field-error" id="err-recurso-url"></span>
+        <!-- Preview dinámico -->
+        <div class="url-preview-modal" id="recurso-url-preview"></div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-close" onclick="closeModal('modal-crear-recurso')">Cancelar</button>
+        <button type="submit" class="btn-confirm">Crear Recurso</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Editar Recurso -->
+<div class="modal" id="modal-editar-recurso">
+  <div class="modal-content crear-modal">
+    <button class="close" onclick="closeModal('modal-editar-recurso')" type="button">&times;</button>
+    <h2 class="modal-title">✏️ Editar Recurso</h2>
+    <form id="formEditarRecurso" class="crear-form" novalidate>
+      {% csrf_token %}
+      <input type="hidden" id="editar-recurso-id">
+
+      <div class="form-group">
+        <label for="editar-recurso-titulo">Título <span class="required">*</span></label>
+        <input type="text" id="editar-recurso-titulo" maxlength="150">
+        <span class="field-error" id="err-editar-recurso-titulo"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="editar-recurso-descripcion">Descripción</label>
+        <textarea id="editar-recurso-descripcion" rows="3" maxlength="400"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="editar-recurso-url">URL del recurso</label>
+        <input type="url" id="editar-recurso-url" maxlength="300">
+        <span class="field-error" id="err-editar-recurso-url"></span>
+        <div class="url-preview-modal" id="editar-recurso-url-preview"></div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-close" onclick="closeModal('modal-editar-recurso')">Cancelar</button>
+        <button type="submit" class="btn-confirm">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Asignar Actividad -->
+<div class="modal" id="modal-asignar">
+  <div class="modal-content crear-modal">
+    <button class="close" onclick="closeModal('modal-asignar')" type="button">&times;</button>
+    <h2 class="modal-title">📋 Asignar Actividad</h2>
+    <p style="font-size:12px;color:var(--text-secondary);margin-bottom:14px;line-height:1.5">
+      Solo puedes asignar actividades a aprendices con los que tengas al menos una cita
+      <strong>FINALIZADA</strong>.
+    </p>
+    <form id="formAsignar" class="crear-form" novalidate>
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="asignar-estudiante">Aprendiz <span class="required">*</span></label>
+        <select id="asignar-estudiante" required>
+          <option value="">— Selecciona un aprendiz —</option>
+          {% for a in aprendices_disponibles %}
+            <option value="{{ a.id }}">{{ a.nombre }}</option>
+          {% empty %}
+            <option value="" disabled>Sin aprendices con cita finalizada</option>
+          {% endfor %}
+        </select>
+        <span class="field-error" id="err-asignar-estudiante"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="asignar-recurso">Basada en recurso (opcional)</label>
+        <select id="asignar-recurso">
+          <option value="">— Actividad personalizada —</option>
+        </select>
+        <span class="input-hint">Al seleccionar, autocompleta título, descripción y URL.</span>
+      </div>
+
+      <div class="form-group">
+        <label for="asignar-titulo">Título <span class="required">*</span></label>
+        <input type="text" id="asignar-titulo" maxlength="150"
+          placeholder="Nombre de la actividad">
+        <span class="field-error" id="err-asignar-titulo"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="asignar-descripcion">Descripción</label>
+        <textarea id="asignar-descripcion" rows="3" maxlength="500"
+          placeholder="¿En qué consiste la actividad?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="asignar-url">URL de apoyo (opcional)</label>
+        <input type="url" id="asignar-url" maxlength="300"
+          placeholder="https://youtube.com/... o https://...">
+        <span class="field-error" id="err-asignar-url"></span>
+        <div class="url-preview-modal" id="asignar-url-preview"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="asignar-observacion">Observación para el aprendiz</label>
+        <input type="text" id="asignar-observacion" maxlength="255"
+          placeholder="Ej: Realizar antes de la próxima cita">
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-close" onclick="closeModal('modal-asignar')">Cancelar</button>
+        <button type="submit" class="btn-confirm">Asignar Actividad</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Editar Actividad Asignada -->
+<div class="modal" id="modal-editar-asignada">
+  <div class="modal-content crear-modal">
+    <button class="close" onclick="closeModal('modal-editar-asignada')" type="button">&times;</button>
+    <h2 class="modal-title">✏️ Editar Actividad Asignada</h2>
+    <form id="formEditarAsignada" class="crear-form" novalidate>
+      {% csrf_token %}
+      <input type="hidden" id="editar-asignada-id">
+
+      <div class="form-group">
+        <label for="editar-asignada-titulo">Título <span class="required">*</span></label>
+        <input type="text" id="editar-asignada-titulo" maxlength="150">
+        <span class="field-error" id="err-editar-asignada-titulo"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="editar-asignada-descripcion">Descripción</label>
+        <textarea id="editar-asignada-descripcion" rows="3" maxlength="500"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="editar-asignada-url">URL de apoyo</label>
+        <input type="url" id="editar-asignada-url" maxlength="300">
+        <span class="field-error" id="err-editar-asignada-url"></span>
+        <div class="url-preview-modal" id="editar-asignada-url-preview"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="editar-asignada-observacion">Observación</label>
+        <input type="text" id="editar-asignada-observacion" maxlength="255">
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-close" onclick="closeModal('modal-editar-asignada')">Cancelar</button>
+        <button type="submit" class="btn-confirm">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Confirmar eliminar -->
+<div class="modal" id="modal-confirmar-eliminar">
+  <div class="modal-content">
+    <h2 class="modal-title" id="eliminar-titulo-modal">Eliminar</h2>
+    <p class="modal-text" id="eliminar-desc-modal">¿Estás seguro? Esta acción no se puede deshacer.</p>
+    <div class="modal-actions">
+      <button class="btn-close" onclick="closeModal('modal-confirmar-eliminar')">Cancelar</button>
+      <button class="btn-cancelar" onclick="ejecutarEliminar()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirmar toggle (soft-delete) -->
+<div class="modal" id="modal-confirmar-toggle">
+  <div class="modal-content">
+    <h2 class="modal-title" id="toggle-titulo-modal">Cambiar estado</h2>
+    <p class="modal-text" id="toggle-texto-modal"></p>
+    <div class="modal-actions">
+      <button class="btn-close" onclick="closeModal('modal-confirmar-toggle')">Cancelar</button>
+      <button class="btn-confirm" id="btn-confirmar-toggle" onclick="ejecutarToggleRecurso()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+
+<!-- Botón tema -->
+<button class="theme-toggle" id="theme-toggle" aria-label="Cambiar tema">
+  <span id="theme-icon">🌙</span>
+</button>
+
+<!-- Datos de Django al JS -->
+<script>
+  window.MW_ROL  = {{ rol }};
+  window.MW_CSRF = '{{ csrf_token }}';
+</script>
+<script src="{% static 'js/actividad.js' %}"></script>
+
+</body>
+</html>

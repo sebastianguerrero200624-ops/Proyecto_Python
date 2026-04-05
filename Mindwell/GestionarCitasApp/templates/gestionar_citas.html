@@ -31,13 +31,11 @@
         </a>
       </li>
       {% if rol == 2 %}
-      <li data-icon="🔍"><a href="#"><span>Consultar Proceso</span></a></li>
-      <li data-icon="🎓"><a href="#"><span>Talleres</span></a></li>
+      <li data-icon="🎓"><a href="{% url 'actividades' %}"><span>Talleres</span></a></li>
       <li data-icon="🧘"><a href="#"><span>Bienestar</span></a></li>
       {% else %}
-      <li data-icon="🎓"><a href="#"><span>Talleres</span></a></li>
+      <li data-icon="🎓"><a href="{% url 'actividades' %}"><span>Talleres</span></a></li>
       <li data-icon="📈"><a href="#"><span>Resultados</span></a></li>
-      <li data-icon="🧘‍♀️"><a href="#"><span>Ejercicios</span></a></li>
       {% endif %}
     </ul>
   </div>
