@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reporte {{ mes_label }} — MindWell</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',Arial,sans-serif; background:#fff; color:#1e293b; font-size:13px; line-height:1.6; }
+
+    /* Header */
+    .pdf-header {
+      background: linear-gradient(135deg,#00966C,#00C389);
+      color:white; padding:28px 40px;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .pdf-header h1 {
+         font-size:24px; letter-spacing:2px; font-weight:800; 
+        }
+
+    .pdf-header p  { 
+        font-size:12px; opacity:.85; margin-top:4px; 
+    }
+
+    .pdf-header .meta { 
+        text-align:right; font-size:12px; opacity:.9; 
+    }
+    .pdf-header .meta strong { 
+        display:block; font-size:15px; 
+    }
+
+    /* Stats */
+    .stats-row {
+      display:flex; gap:12px; margin:20px 40px; flex-wrap:wrap;
+    }
+    .stat {
+      flex:1; min-width:110px; background:#f0fdf4;
+      border-left:5px solid #00966C; border-radius:0 10px 10px 0;
+      padding:14px 18px; text-align:center;
+    }
+    .stat .val { font-size:28px; font-weight:800; color:#00966C; }
+    .stat .lbl { font-size:11px; color:#64748b; margin-top:2px; }
+
+    /* Sección */
+    .section { margin:20px 40px; }
+    .section-title {
+      font-size:14px; font-weight:700; color:#1e293b;
+      border-bottom:2px solid #e2e8f0; padding-bottom:7px; margin-bottom:12px;
+      display:flex; align-items:center; gap:8px;
+    }
+
+    /* Tabla */
+    table { width:100%; border-collapse:collapse; font-size:12px; }
+    th { background:#00966C; color:white; padding:8px 12px; text-align:left; font-weight:600; }
+    td { padding:7px 12px; border-bottom:1px solid #e2e8f0; }
+    tr:nth-child(even) td { background:#f8fafc; }
+
+    /* Badge rol */
+    .badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; }
+    .b-admin { background:#ede9fe; color:#6d28d9; }
+    .b-aprendiz { background:#dcfce7; color:#166534; }
+    .b-instructor { background:#dbeafe; color:#1d4ed8; }
+
+    /* Barra progreso */
+    .bar-wrap { display:flex; align-items:center; gap:8px; }
+    .bar { flex:1; height:8px; background:#e2e8f0; border-radius:4px; overflow:hidden; }
+    .bar-fill { height:100%; background:#00966C; border-radius:4px; }
+
+    /* Footer */
+    .pdf-footer {
+      margin-top:36px; padding:14px 40px;
+      border-top:2px solid #e2e8f0;
+      display:flex; justify-content:space-between;
+      font-size:11px; color:#94a3b8;
+    }
+    .divider { height:1px; background:#e2e8f0; margin:16px 40px; }
+    .empty { text-align:center; color:#94a3b8; font-style:italic; padding:16px; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="pdf-header">
+    <div>
+      <h1>MINDWELL</h1>
+      <p>Reporte General de Actividad — {{ mes_label }}</p>
+    </div>
+    <div class="meta">
+      <strong>{{ fecha_gen }}</strong>
+      <span>Generado por: {{ generado_por.get_full_name }}</span>
+    </div>
+  </div>
+
+  <!-- Stats del mes -->
+  <div class="stats-row">
+    <div class="stat"><div class="val">{{ total_usuarios }}</div><div class="lbl">Usuarios activos</div></div>
+    <div class="stat"><div class="val">{{ total_aprendices }}</div><div class="lbl">Aprendices</div></div>
+    <div class="stat"><div class="val">{{ total_instructores }}</div><div class="lbl">Instructores</div></div>
+    <div class="stat"><div class="val">{{ total_citas }}</div><div class="lbl">Citas del mes</div></div>
+    <div class="stat"><div class="val">{{ total_actividades }}</div><div class="lbl">Actividades</div></div>
+    <div class="stat"><div class="val">{{ total_resultados }}</div><div class="lbl">Resultados</div></div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Top aprendices -->
+  <div class="section">
+    <div class="section-title">🏆 Aprendices Más Activos del Mes</div>
+    {% if top_aprendices %}
+    <table>
+      <thead><tr><th>#</th><th>Aprendiz</th><th>Citas en el mes</th></tr></thead>
+      <tbody>
+        {% for a in top_aprendices %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ a.estudiante__first_name }} {{ a.estudiante__last_name }}</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar"><div class="bar-fill" style="width:{% widthratio a.total top_aprendices.0.total 100 %}%"></div></div>
+              <strong>{{ a.total }}</strong>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Sin actividad de aprendices en este período.</p>
+    {% endif %}
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Citas del mes -->
+  <div class="section">
+    <div class="section-title">📅 Citas Registradas en {{ mes_label }}</div>
+    {% if citas_mes %}
+    <table>
+      <thead>
+        <tr><th>Fecha</th><th>Aprendiz</th><th>Orientador</th><th>Motivo</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        {% for c in citas_mes %}
+        <tr>
+          <td>{{ c.fecha }}</td>
+          <td>{{ c.estudiante.get_full_name }}</td>
+          <td>{{ c.orientador.get_full_name }}</td>
+          <td>{{ c.motivo|truncatechars:50 }}</td>
+          <td>{{ c.estado }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Sin citas registradas en este período.</p>
+    {% endif %}
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Nuevos usuarios -->
+  <div class="section">
+    <div class="section-title">🆕 Nuevos Usuarios en {{ mes_label }}</div>
+    {% if nuevos_usuarios %}
+    <table>
+      <thead>
+        <tr><th>Nombre</th><th>Email</th><th>Documento</th><th>Rol</th><th>Fecha registro</th></tr>
+      </thead>
+      <tbody>
+        {% for p in nuevos_usuarios %}
+        <tr>
+          <td>{{ p.user.get_full_name }}</td>
+          <td>{{ p.user.email }}</td>
+          <td>{{ p.documento }}</td>
+          <td>
+            {% if p.rol_id == 1 %}<span class="badge b-admin">Admin</span>
+            {% elif p.rol_id == 2 %}<span class="badge b-aprendiz">Aprendiz</span>
+            {% else %}<span class="badge b-instructor">Instructor</span>{% endif %}
+          </td>
+          <td>{{ p.user.date_joined|date:"Y-m-d" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">Sin nuevos usuarios en este período.</p>
+    {% endif %}
+  </div>
+
+  <!-- Footer -->
+  <div class="pdf-footer">
+    <span>MindWell — Panel de Administración</span>
+    <span>Documento confidencial — Uso interno</span>
+    <span>{{ fecha_gen }}</span>
+  </div>
+
+</body>
+</html>

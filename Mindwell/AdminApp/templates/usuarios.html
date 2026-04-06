@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Usuarios — MindWell Admin</title>
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="{% static 'img/logo.png' %}" alt="MindWell" class="logo-img">
+      <h1 class="sidebar-title">MINDWELL</h1>
+    </div>
+    <div class="toggle-btn" onclick="toggleSidebar()">▶</div>
+    <ul>
+      <li data-icon="🏠"><a href="{% url 'dashboard' %}"><span>Dashboard</span></a></li>
+      <li data-icon="👥" class="active"><a href="{% url 'admin_usuarios' %}"><span>Usuarios</span></a></li>
+      <li data-icon="📊"><a href="{% url 'admin_reportes' %}"><span>Reportes</span></a></li>
+    </ul>
+  </div>
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="header">
+    <div class="header-title">👥 Gestión de Usuarios</div>
+    <div class="user-info">
+      <input type="text" id="buscador" placeholder="🔍 Buscar usuario..." class="input-buscar">
+      <select id="filtro-rol" class="select-filtro">
+        <option value="">Todos los roles</option>
+        <option value="1">Administrador</option>
+        <option value="2">Aprendiz</option>
+        <option value="3">Instructor</option>
+      </select>
+      <div class="user-avatar">{{ nombres }} {{ apellidos }}</div>
+      <a href="{% url 'cerrar_sesion' %}" class="btn-sesion">Cerrar sesión</a>
+    </div>
+  </header>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="main-content">
+
+    <div class="stats-grid" id="stats-usuarios"></div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Lista de Usuarios Registrados</h3>
+        <span id="contador-usuarios" class="badge-count">Cargando...</span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Documento</th>
+              <th>Rol Actual</th>
+              <th>Estado</th>
+              <th>Registro</th>
+              <th>Cambiar Rol</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-usuarios">
+            <tr><td colspan="8" class="loading-cell">Cargando usuarios...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <button class="theme-toggle" id="theme-toggle"><span id="theme-icon">🌙</span></button>
+
+  <script>window.MW_CSRF = '{{ csrf_token }}';</script>
+  <script src="{% static 'js/admin.js' %}"></script>
+</body>
+</html>

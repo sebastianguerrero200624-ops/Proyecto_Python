@@ -31,10 +31,10 @@
       {% if rol == 1 %}
       <!-- ── ADMINISTRADOR ── -->
       <li data-icon="👥">
-        <a href="/admin/usuarios"><span>Usuarios</span></a>
+        <a href="{% url 'admin_usuarios' %}"><span>Usuarios</span></a>
       </li>
       <li data-icon="📊">
-        <a href="/admin/reportes"><span>Reportes</span></a>
+        <a href="{% url 'admin_reportes' %}"><span>Reportes</span></a>
       </li>
 
       {% elif rol == 2 %}
@@ -111,9 +111,8 @@
     <div class="quick-actions">
 
       {% if rol == 1 %}
-      <a href="/admin/usuarios" class="action-btn">👥 <span>Ver Usuarios</span></a>
-      <a href="/admin/reportes" class="action-btn">📊 <span>Reportes</span></a>
-      <a href="/admin/configuracion" class="action-btn">⚙️ <span>Configuración</span></a>
+      <a href="{% url 'admin_usuarios' %}" class="action-btn">👥 <span>Ver Usuarios</span></a>
+      <a href="{% url 'admin_reportes' %}" class="action-btn">📊 <span>Reportes</span></a>
 
       {% elif rol == 2 %}
       <a href="citas" class="action-btn">📅 <span>Mis Citas</span></a>

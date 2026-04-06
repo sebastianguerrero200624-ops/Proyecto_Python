@@ -26,6 +26,7 @@ urlpatterns = [
     path('',include('GestionarCitasApp.urls')),
     path('',include('ActividadApp.urls')),
     path('',include('ResultadoApp.urls')),
+    path('admin-panel/',include('AdminApp.urls')),
 ]
 
 

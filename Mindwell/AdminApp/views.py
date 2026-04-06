@@ -40,7 +40,7 @@ def _json_body(request):
         return {}
 
 
-ROL_LABEL = {1: 'Administrador', 2: 'Aprendiz', 3: 'Instructor'}
+ROL_LABEL = {1: 'Administrador', 2: 'Aprendiz', 3: 'Orientador'}
 MESES_ES  = ['Ene','Feb','Mar','Abr','May','Jun',
              'Jul','Ago','Sep','Oct','Nov','Dic']
 
@@ -52,7 +52,7 @@ MESES_ES  = ['Ene','Feb','Mar','Abr','May','Jun',
 @login_required(login_url='/autenticar/login')
 @solo_admin
 def usuarios(request):
-    return render(request, 'AdminApp/usuarios.html', {
+    return render(request, 'usuarios.html', {
         'nombres':   request.user.first_name,
         'apellidos': request.user.last_name,
     })
@@ -80,24 +80,19 @@ def api_listar_usuarios(request):
 
 
 # ─────────────────────────────────────────────
-#  API: CAMBIO DE ROL (triple confirmación en el JS)
+#  API: CAMBIO DE ROL
 # ─────────────────────────────────────────────
 
 @login_required(login_url='/autenticar/login')
 @solo_admin
 @require_POST
 def api_cambiar_rol(request, user_id):
-    """
-    El frontend ya habrá pedido triple confirmación.
-    El backend valida que el rol sea válido y registra la auditoría.
-    """
-    data    = _json_body(request)
+    data      = _json_body(request)
     nuevo_rol = int(data.get('rol_nuevo', 0))
 
     if nuevo_rol not in (1, 2, 3):
         return JsonResponse({'error': 'Rol no válido. Debe ser 1, 2 o 3.'}, status=400)
 
-    # No puede quitarse a sí mismo el rol de admin
     if user_id == request.user.pk and nuevo_rol != 1:
         return JsonResponse({'error': 'No puedes quitarte el rol de administrador a ti mismo.'}, status=400)
 
@@ -112,11 +107,9 @@ def api_cambiar_rol(request, user_id):
     if rol_anterior == nuevo_rol:
         return JsonResponse({'error': 'El usuario ya tiene ese rol.'}, status=400)
 
-    # Cambiar rol
     perfil.rol_id = nuevo_rol
     perfil.save(update_fields=['rol_id'])
 
-    # Auditoría
     CambioRol.objects.create(
         administrador=request.user,
         usuario_afectado=usuario,
@@ -139,7 +132,7 @@ def api_cambiar_rol(request, user_id):
 @login_required(login_url='/autenticar/login')
 @solo_admin
 def reportes(request):
-    return render(request, 'AdminApp/reportes.html', {
+    return render(request, 'reportes.html', {
         'nombres':   request.user.first_name,
         'apellidos': request.user.last_name,
     })
@@ -154,8 +147,7 @@ def reportes(request):
 def api_datos_reporte(request):
     hoy = date.today()
 
-    # ── Filtro de mes (parámetro opcional) ──
-    mes_str = request.GET.get('mes')  # formato YYYY-MM
+    mes_str = request.GET.get('mes')
     if mes_str:
         try:
             año, mes = map(int, mes_str.split('-'))
@@ -171,29 +163,24 @@ def api_datos_reporte(request):
         inicio = date(hoy.year, hoy.month, 1)
         fin    = hoy + timedelta(days=1)
 
-    # ── Actividad en el período ──
     citas_mes       = Cita.objects.filter(creado_en__date__gte=inicio, creado_en__date__lt=fin)
     actividades_mes = ActividadAsignada.objects.filter(creado_en__date__gte=inicio, creado_en__date__lt=fin)
     resultados_mes  = Resultado.objects.filter(creado_en__date__gte=inicio, creado_en__date__lt=fin)
 
-    # ── Totales generales ──
-    total_usuarios    = Perfil.objects.filter(activo=True).count()
-    total_aprendices  = Perfil.objects.filter(rol_id=2, activo=True).count()
+    total_usuarios     = Perfil.objects.filter(activo=True).count()
+    total_aprendices   = Perfil.objects.filter(rol_id=2, activo=True).count()
     total_instructores = Perfil.objects.filter(rol_id=3, activo=True).count()
 
-    # ── Actividad diaria del mes (para gráfica de líneas) ──
     dias_mes = (fin - inicio).days
-    fechas_labels = []
-    citas_dia     = defaultdict(int)
-    act_dia       = defaultdict(int)
-    res_dia       = defaultdict(int)
+    citas_dia = defaultdict(int)
+    act_dia   = defaultdict(int)
+    res_dia   = defaultdict(int)
 
     for i in range(dias_mes):
         d = inicio + timedelta(days=i)
-        fechas_labels.append(str(d.day))
-        citas_dia[str(d)]  = 0
-        act_dia[str(d)]    = 0
-        res_dia[str(d)]    = 0
+        citas_dia[str(d)] = 0
+        act_dia[str(d)]   = 0
+        res_dia[str(d)]   = 0
 
     for c in citas_mes:
         citas_dia[str(c.creado_en.date())] += 1
@@ -204,7 +191,6 @@ def api_datos_reporte(request):
 
     fechas_keys = sorted(citas_dia.keys())
 
-    # ── Aprendices más activos (por citas creadas) ──
     top_aprendices_qs = (
         Cita.objects.filter(creado_en__date__gte=inicio, creado_en__date__lt=fin)
         .values('estudiante__first_name', 'estudiante__last_name', 'estudiante_id')
@@ -219,14 +205,12 @@ def api_datos_reporte(request):
         for r in top_aprendices_qs
     ]
 
-    # ── Distribución de roles ──
     roles = {
         'administradores': Perfil.objects.filter(rol_id=1).count(),
         'aprendices':       total_aprendices,
         'instructores':     total_instructores,
     }
 
-    # ── Historial 12 meses (citas) ──
     meses_labels = []
     meses_citas  = []
     for i in range(11, -1, -1):
@@ -250,10 +234,10 @@ def api_datos_reporte(request):
             'resultados':   resultados_mes.count(),
         },
         'actividadDiaria': {
-            'labels':       [str(d.day) + '/' + str(inicio.month) for d in [inicio + timedelta(i) for i in range(dias_mes)]],
-            'citas':        [citas_dia[k] for k in fechas_keys],
-            'actividades':  [act_dia[k]   for k in fechas_keys],
-            'resultados':   [res_dia[k]   for k in fechas_keys],
+            'labels':      [str((inicio + timedelta(i)).day) + '/' + str(inicio.month) for i in range(dias_mes)],
+            'citas':       [citas_dia[k] for k in fechas_keys],
+            'actividades': [act_dia[k]   for k in fechas_keys],
+            'resultados':  [res_dia[k]   for k in fechas_keys],
         },
         'topAprendices': top_aprendices,
         'roles':         roles,
@@ -271,7 +255,7 @@ def api_datos_reporte(request):
 @login_required(login_url='/autenticar/login')
 @solo_admin
 def generar_pdf_reporte(request):
-    hoy  = date.today()
+    hoy     = date.today()
     mes_str = request.GET.get('mes', f'{hoy.year}-{hoy.month:02d}')
 
     try:
@@ -282,13 +266,11 @@ def generar_pdf_reporte(request):
         inicio = date(hoy.year, hoy.month, 1)
         fin    = hoy + timedelta(days=1)
 
-    # Datos para el PDF
-    perfiles         = Perfil.objects.select_related('user').filter(activo=True)
-    citas_mes        = Cita.objects.filter(creado_en__date__gte=inicio, creado_en__date__lt=fin).select_related('estudiante', 'orientador')
-    actividades_mes  = ActividadAsignada.objects.filter(creado_en__date__gte=inicio, creado_en__date__lt=fin).select_related('estudiante', 'orientador')
-    resultados_mes   = Resultado.objects.filter(creado_en__date__gte=inicio, creado_en__date__lt=fin).select_related('estudiante', 'orientador')
+    perfiles        = Perfil.objects.select_related('user').filter(activo=True)
+    citas_mes       = Cita.objects.filter(creado_en__date__gte=inicio, creado_en__date__lt=fin).select_related('estudiante', 'orientador')
+    actividades_mes = ActividadAsignada.objects.filter(creado_en__date__gte=inicio, creado_en__date__lt=fin).select_related('estudiante', 'orientador')
+    resultados_mes  = Resultado.objects.filter(creado_en__date__gte=inicio, creado_en__date__lt=fin).select_related('estudiante', 'orientador')
 
-    # Top aprendices
     top_aprendices = (
         Cita.objects.filter(creado_en__date__gte=inicio, creado_en__date__lt=fin)
         .values('estudiante__first_name', 'estudiante__last_name')
@@ -297,26 +279,26 @@ def generar_pdf_reporte(request):
     )
 
     contexto = {
-        'mes_label':      f'{MESES_ES[inicio.month-1]} {inicio.year}',
-        'fecha_gen':      hoy,
-        'generado_por':   request.user,
-        'total_usuarios': perfiles.count(),
-        'total_aprendices': perfiles.filter(rol_id=2).count(),
+        'mes_label':          f'{MESES_ES[inicio.month-1]} {inicio.year}',
+        'fecha_gen':          hoy,
+        'generado_por':       request.user,
+        'total_usuarios':     perfiles.count(),
+        'total_aprendices':   perfiles.filter(rol_id=2).count(),
         'total_instructores': perfiles.filter(rol_id=3).count(),
-        'total_citas':    citas_mes.count(),
-        'total_actividades': actividades_mes.count(),
-        'total_resultados':  resultados_mes.count(),
-        'citas_mes':      citas_mes[:50],
-        'actividades_mes': actividades_mes[:30],
-        'top_aprendices': top_aprendices,
-        'nuevos_usuarios': Perfil.objects.filter(
+        'total_citas':        citas_mes.count(),
+        'total_actividades':  actividades_mes.count(),
+        'total_resultados':   resultados_mes.count(),
+        'citas_mes':          citas_mes[:50],
+        'actividades_mes':    actividades_mes[:30],
+        'top_aprendices':     top_aprendices,
+        'nuevos_usuarios':    Perfil.objects.filter(
             activo=True,
             user__date_joined__date__gte=inicio,
             user__date_joined__date__lt=fin
         ).select_related('user'),
     }
 
-    html_string = render_to_string('AdminApp/pdf_reporte.html', contexto)
+    html_string = render_to_string('pdf_reporte.html', contexto)
 
     try:
         from weasyprint import HTML as WP_HTML

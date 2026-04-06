@@ -28,7 +28,8 @@ INSTALLED_APPS = [
     'GestionarCitasApp',
     'MindwellApp',
     'ActividadApp',
-    'ResultadoApp'
+    'ResultadoApp',
+    'AdminApp',
 ]
 
 
