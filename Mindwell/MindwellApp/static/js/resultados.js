@@ -366,13 +366,30 @@ async function cargarFiltroAprendices() {
     const d   = await apiGet('/api/resultados/aprendices/');
     const sel = document.getElementById('filtro-aprendiz');
     if (!sel) return;
+
+    // Deduplicar por id antes de insertar
+    const vistos = new Set();
     d.aprendices.forEach(a => {
+      if (vistos.has(a.id)) return;
+      vistos.add(a.id);
       const opt = document.createElement('option');
-      opt.value = a.id; opt.textContent = a.nombre;
+      opt.value = a.id;
+      opt.textContent = a.nombre;
       sel.appendChild(opt);
     });
+
     sel.addEventListener('change', () => cargarGraficas(sel.value));
   } catch (e) { console.error(e); }
+}
+
+function filtrarAprendizHeader(query) {
+  const sel = document.getElementById('filtro-aprendiz');
+  if (!sel) return;
+  const q = query.toLowerCase().trim();
+  Array.from(sel.options).forEach(opt => {
+    if (opt.value === '') { opt.style.display = ''; return; }
+    opt.style.display = opt.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
 }
 
 // ── Modal: Crear resultado ───────────────────────────────────
@@ -430,6 +447,22 @@ async function crearResultado(e) {
 }
 
 // ── Modal: Editar resultado ───────────────────────────────────
+
+
+async function abrirEditar(id) {
+  await Swal.fire({
+    icon: 'warning',
+    title: 'Modificación registrada',
+    text: 'Los resultados ya evaluados forman parte del historial oficial del aprendiz. Cualquier cambio quedará registrado. ¿Deseas continuar?',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, editar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#f59e0b',
+  }).then(result => {
+    if (!result.isConfirmed) return;
+    _abrirEditarFormulario(id);
+  });
+}
 
 async function abrirEditar(id) {
   const r = resultadosCache.find(x => x.id === id);

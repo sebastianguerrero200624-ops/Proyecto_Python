@@ -10,8 +10,8 @@ from AutenticarApp.models import Perfil
 
 def inicio(request):
     if request.user.is_authenticated:
-        return redirect('dashboard')
-    return redirect('login')
+        return redirect('login')
+    return render(request, 'inicio.html')
 
 
 # ──────────────────────────────────────────────

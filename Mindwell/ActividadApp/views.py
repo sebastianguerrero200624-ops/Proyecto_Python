@@ -87,15 +87,10 @@ def actividades(request):
             estado='FINALIZADA'
         ).values_list('estudiante_id', flat=True).distinct()
 
-        for uid in ids_estudiantes:
-            try:
-                u = User.objects.get(pk=uid)
-                aprendices_disponibles.append({
-                    'id':     u.pk,
-                    'nombre': u.get_full_name() or u.username,
-                })
-            except User.DoesNotExist:
-                pass
+        aprendices_disponibles = [
+            {'id': u.pk, 'nombre': u.get_full_name() or u.username}
+            for u in User.objects.filter(pk__in=ids_estudiantes)
+        ]
 
     contexto = {
         'rol':perfil.rol_id,

@@ -37,6 +37,8 @@
     <div class="user-info">
       {% if rol == 3 %}
         <button class="btn-accion" onclick="abrirModalCrear()">➕ Registrar Resultado</button>
+        <input type="text" id="buscar-aprendiz-header" placeholder="🔍 Buscar aprendiz..." 
+               class="input-buscar-header" oninput="filtrarAprendizHeader(this.value)">
         <select id="filtro-aprendiz" class="select-filtro">
           <option value="">Todos los aprendices</option>
         </select>

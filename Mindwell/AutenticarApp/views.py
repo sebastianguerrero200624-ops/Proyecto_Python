@@ -216,7 +216,7 @@ def validar(request):
 
 def cerrar_sesion(request):
     logout(request)
-    return redirect('login')
+    return redirect('inicio')
 
 
 # ──────────────────────────────────────────────

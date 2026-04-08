@@ -242,11 +242,10 @@ function renderTabla(citas) {
         if (c.estado === 'PENDIENTE')
           acciones += `<button class="btn-aprobar" onclick="aprobarDirecto(${c.id})">✓ Aprobar</button>`;
         if (c.estado === 'APROBADA') {
-          acciones += `<button class="btn-reprogramar" onclick="seleccionarCita(${c.id}); openModal('modal-reprogramar-ori')">📅 Repro.</button>`;
           acciones += `<button class="btn-finalizar" onclick="seleccionarCita(${c.id}); openModal('modal-finalizar')">✅ Finalizar</button>`;
         }
-        if (['PENDIENTE','APROBADA','REPROGRAMADA'].includes(c.estado))
-          acciones += `<button class="btn-cancelar" onclick="seleccionarCita(${c.id}); openModal('modal-cancelar-ori')">❌ Cancelar</button>`;
+        //if (['PENDIENTE','APROBADA','REPROGRAMADA'].includes(c.estado))
+        //  acciones += `<button class="btn-cancelar" onclick="seleccionarCita(${c.id}); openModal('modal-cancelar-ori')">❌ Cancelar</button>`;
       }
     }
 
